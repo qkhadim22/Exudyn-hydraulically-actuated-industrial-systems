@@ -1,4 +1,4 @@
-# Machine Library for Non-Ideal Joints
+# Hydraulically Actuated Industrial Systems
 This project provides a machine learning-based library for modeling non-ideal joints in mechanical systems. 
 It aims to replace traditional joint models using pre-trained ML models.
 
