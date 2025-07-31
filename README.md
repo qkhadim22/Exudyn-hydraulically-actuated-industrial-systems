@@ -6,7 +6,7 @@ The experimental setup is available at the Laboratory of Intelligent Machines, L
 - Rigid Multibody System Dynamics — Redundant and Minimal Coordinate Methods
 - Flexible Multibody System Dynamics — Component Mode Synthesis 
 - Hydraulics – Lumped Fluid Theory
-- Actuator frictions – Velocity-dependent Stribeck friction model
+- Actuator friction – Velocity-dependent Stribeck friction model
 
 ## Dependencies 
 - Exudyn (https://exudyn.readthedocs.io/en/v1.9.83.dev1/)
