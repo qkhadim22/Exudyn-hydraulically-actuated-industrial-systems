@@ -18,13 +18,15 @@ It aims to replace traditional joint models using pre-trained ML models.
 - Results – Solutions/.., ../data/, ../results/, ../MLmodels/
 - Latex – Figures/.., References/.., 'LayOut.cls','Manuscript.tex'  
 
-## License
-- Open access? 
-
 ## Contact
 
 - Qasim Khadim – University of Oulu (qasim.khadim@lut.fi)
-- Andreas Zwölfer – Technical University of Munich (andreas.zwoelfer@tum.de)
+- Johannes Gerstmayr – johannes.gerstmayr@uibk.ac.at (johannes.gerstmayr@uibk.ac.at)
+
+## License
+- These models are free to use. Use below references for the citations.
+
+
 
 ## Installation
 Clone the repository and install dependencies:
