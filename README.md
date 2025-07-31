@@ -1,12 +1,14 @@
 # Hydraulically Actuated Industrial Systems
-This project provides a machine learning-based library for modeling non-ideal joints in mechanical systems. 
-It aims to replace traditional joint models using pre-trained ML models.
+This project provides hydraulically actuated rigid and flexible crane models. The actual hydraulic parameters and geometric configuration align with existing industrial machinery. The experimental setup is available at the Laboratory of Intelligent Machines at LUT University.
 
-## Features
-- Types – Hydraulically actuated rigid and flexible systems (Lift Boom and Crane)
-- Exudyn – Data acquision and preprocessing tools (https://exudyn.readthedocs.io/en/v1.9.83.dev1/)
+## Models
+- Rigid Multibody System Dynamics — Redundant and Minimal Coordinate Methods
+- Flexible Multibody System Dynamics — Component Mode Synthesis 
+- Hydraulics – Lumped Fluid Theory
+- Actuator frictions – Velocity-dependent Stribeck friction model
 
 ## Dependencies 
+- Exudyn (https://exudyn.readthedocs.io/en/v1.9.83.dev1/)
 - numpy stl (https://pypi.org/project/numpy-stl/)
 - Abaqus (https://www.3ds.com/products/simulia/abaqus)
 
@@ -15,10 +17,9 @@ It aims to replace traditional joint models using pre-trained ML models.
 - Exudyn – Models/.., 'Container.py' (Parameters), 'Control.py' (Control Signals)  
 - Results – solutions/.., ../OneArm/ (LiftBoom), ../TwoArms/ (PATU crane)
 
-## Contact
-
-- Qasim Khadim – University of Oulu (qasim.khadim@lut.fi)
-- Johannes Gerstmayr – University of Innsbruck (johannes.gerstmayr@uibk.ac.at)
+## Acknowledgements
+The author would like to thanks Prof. Johannes Gerstmayr for hosting me at University of Innsbruck, Department of Mechatronics, Innsbruck, Austria. His supervision enabled me to understand and write this code in Exudyn environment. Special thanks to Stefan Holzinger and Michael Pieber.
+I would also like to thanks Prof. Grzegorz Orzechowski, Prof. Emil Kurvinen, Prof. Aki Mikkola and Prof. Heikki Handroos for supporting this work.
 
 ## License
 - These models are free to use. 
