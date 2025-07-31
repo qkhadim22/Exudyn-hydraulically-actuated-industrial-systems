@@ -29,4 +29,4 @@ It aims to replace traditional joint models using pre-trained ML models.
 ## Installation
 Clone the repository and install dependencies:
 ```bash
-git clone https://github.com/qkhadim22/Non-Ideal-Joints-ML-Library.git
+git clone https://github.com/qkhadim22/Exudyn-hydraulically-actuated-industrial-systems.git
