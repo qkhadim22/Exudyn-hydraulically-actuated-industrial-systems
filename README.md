@@ -21,7 +21,7 @@ It aims to replace traditional joint models using pre-trained ML models.
 ## Contact
 
 - Qasim Khadim – University of Oulu (qasim.khadim@lut.fi)
-- Johannes Gerstmayr – johannes.gerstmayr@uibk.ac.at (johannes.gerstmayr@uibk.ac.at)
+- Johannes Gerstmayr – University of Innsbruck (johannes.gerstmayr@uibk.ac.at)
 
 ## License
 - These models are free to use. Use below references for the citations.
