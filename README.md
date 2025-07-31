@@ -3,8 +3,7 @@ This project provides a machine learning-based library for modeling non-ideal jo
 It aims to replace traditional joint models using pre-trained ML models.
 
 ## Features
-- Types – Support for different non-ideal joint types (Generic joint)
-- Properties – Flexibility, friction, contact, wear, tolerances, backlash, compliance, lubrication, fretting, misalignment, vibration    
+- Types – Hydraulically actuated rigid and flexible systems (Lift Boom and Crane)
 - Exudyn – Data acquision and preprocessing tools (https://exudyn.readthedocs.io/en/v1.9.83.dev1/)
 
 ## Dependencies 
@@ -12,11 +11,9 @@ It aims to replace traditional joint models using pre-trained ML models.
 - Abaqus (https://www.3ds.com/products/simulia/abaqus)
 
 ## Folders and files
-- Main file – 'MainScript.py' 
-- Exudyn – Models/..
-- ML –  ML/..
-- Results – Solutions/.., ../data/, ../results/, ../MLmodels/
-- Latex – Figures/.., References/.., 'LayOut.cls','Manuscript.tex'  
+- Graphics and mesh – AbaqusMesh/... 
+- Exudyn – Models/.., 'Container.py' (Parameters), 'Control.py' (Control Signals)  
+- Results – solutions/.., ../OneArm/ (LiftBoom), ../TwoArms/ (PATU crane)
 
 ## Contact
 
@@ -27,7 +24,7 @@ It aims to replace traditional joint models using pre-trained ML models.
 - These models are free to use. 
 
 ## References
-- Use the references below for citing the hydraulic parameters and hydraulically actuated flexible multibody systems. Contributions on flexible bodies, flexible multibody systems, hydraulics, and actuator frictions can be found in Reference ii.
+- Use the references below for citing the hydraulic parameters and hydraulically actuated flexible multibody systems. Contributions on flexible bodies, flexible multibody systems, hydraulics, and actuator frictions can be found in reference ii.
 	1. Qasim Khadim, et al. Experimental investigation into the state estimation of a forestry crane using the unscented Kalman filter and a multiphysics model. Mechanism and Machine Theory, 189, 105405, 2023.
 	2. Qasim Khadim, Peter Manzl, Emil Kurvinen, Aki Mikkola, Grzegorz Orzechowski, Johannes Gerstmayr. Real-Time Structural Deflection Estimation in Hydraulically Actuated Systems Using 3D Flexible Multibody Simulation and DNNs. Mechanical Systems and Signal Processing, Under Review, 2025.
 
