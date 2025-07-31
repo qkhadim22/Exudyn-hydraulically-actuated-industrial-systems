@@ -1,5 +1,6 @@
 # Hydraulically Actuated Industrial Systems
-This project provides hydraulically actuated rigid and flexible crane models. The actual hydraulic parameters and geometric configuration align with existing industrial machinery. The experimental setup is available at the Laboratory of Intelligent Machines at LUT University.
+This project provides hydraulically actuated rigid and flexible crane models. The actual hydraulic parameters and geometric configuration align with existing industrial machinery. 
+The experimental setup is available at the Laboratory of Intelligent Machines, LUT University. The dynamic responses of these models have been validated against experimental data.
 
 ## Models
 - Rigid Multibody System Dynamics — Redundant and Minimal Coordinate Methods
