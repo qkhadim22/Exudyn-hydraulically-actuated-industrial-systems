@@ -14,7 +14,6 @@ The experimental setup is available at the Laboratory of Intelligent Machines, L
 - Abaqus (https://www.3ds.com/products/simulia/abaqus)
 
 ## Folders and files
-- Graphics and mesh – AbaqusMesh/... 
 - Exudyn – Models/.., 'Container.py' (Parameters), 'Control.py' (Control Signals)  
 - Results – solutions/.., ../OneArm/ (LiftBoom), ../TwoArms/ (PATU crane)
 
