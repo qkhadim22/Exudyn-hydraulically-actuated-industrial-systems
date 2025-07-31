@@ -24,7 +24,11 @@ It aims to replace traditional joint models using pre-trained ML models.
 - Johannes Gerstmayr – University of Innsbruck (johannes.gerstmayr@uibk.ac.at)
 
 ## License
-- These models are free to use. Use below references for the citations.
+- These models are free to use. 
+
+## References
+- Use the references below for citing flexible bodies, flexible multibody systems, hydraulics, actuator frictions, and hydraulically flexible multibody systems.
+	1. Andreas Zwölfer and Johannes Gerstmayr. The nodal-based floating frame of reference formulation with modal reduction: How to calculate the invariants without a lumped mass approximation. Acta Mechanica, 232:835–851, 2021.
 
 
 
