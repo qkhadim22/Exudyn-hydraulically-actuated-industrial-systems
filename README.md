@@ -14,8 +14,11 @@ The experimental setup is available at the Laboratory of Intelligent Machines, L
 - Abaqus (https://www.3ds.com/products/simulia/abaqus)
 
 ## Folders and files
-- Exudyn – Models/.., 'Container.py' (Parameters), 'Control.py' (Control Signals)  
-- Results – solutions/.., ../OneArm/ (LiftBoom), ../TwoArms/ (PATU crane)
+- Parameters – 'Models/Container.py'
+- Controls – 'Models/Control.py' 
+- LiftBoom – 'solutions/OneArm/..' 
+- Patu – 'solutions/TwoArms/..' 
+
 
 ## Acknowledgements
 The author would like to thanks Prof. Johannes Gerstmayr for hosting me at University of Innsbruck, Department of Mechatronics, Innsbruck, Austria. His supervision enabled me to understand and write this code in Exudyn environment. Special thanks to Stefan Holzinger and Michael Pieber.
