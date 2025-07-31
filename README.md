@@ -6,13 +6,10 @@ It aims to replace traditional joint models using pre-trained ML models.
 - Types – Support for different non-ideal joint types (Generic joint)
 - Properties – Flexibility, friction, contact, wear, tolerances, backlash, compliance, lubrication, fretting, misalignment, vibration    
 - Exudyn – Data acquision and preprocessing tools (https://exudyn.readthedocs.io/en/v1.9.83.dev1/)
-- PyTorch – Training and inference models (https://pytorch.org/)
-
 
 ## Dependencies 
-- ngsolve (https://ngsolve.org/)
-- cudatoolkit (https://developer.nvidia.com/cuda-toolkit)
-- scikit-learn (https://scikit-learn.org/stable/)
+- numpy stl (https://pypi.org/project/numpy-stl/)
+- Abaqus (https://www.3ds.com/products/simulia/abaqus)
 
 ## Folders and files
 - Main file – 'MainScript.py' 
