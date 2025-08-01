@@ -22,7 +22,7 @@ The author would like to thanks Prof. Johannes Gerstmayr for hosting me at Unive
 I would also like to thanks Prof. Grzegorz Orzechowski, Prof. Emil Kurvinen, Prof. Aki Mikkola and Prof. Heikki Handroos for supporting this work.
 
 ## License
-- These models are free to use. 
+- These models are part of Exudyn. Exudyn is free software. You can redistribute it and/or modify it under the terms of the Exudyn license. 
 
 ## References
 - Use the references below for citing the hydraulic parameters and hydraulically actuated flexible multibody systems. Contributions on flexible bodies, flexible multibody systems, hydraulics, and actuator frictions can be found in reference ii.
