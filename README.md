@@ -13,7 +13,7 @@ The dynamic responses of these models have been validated against experimental d
 - numpy stl (https://pypi.org/project/numpy-stl/)
 - Abaqus (https://www.3ds.com/products/simulia/abaqus)
 
-## Folders and files
+## Paremeter and control signals
 - Parameters – 'Models/Container.py'
 - Controls – 'Models/Control.py' 
 
