@@ -6,133 +6,127 @@ feT             = FEMinterface()
 
 
 def LiftBoom(self, theta1, p1, p2):
-        self.theta1 = theta1
-        self.p1     = p1
-        self.p2     = p2                         
-        self.dictSensors = {}
+        self.theta1                 = theta1
+        self.p1                     = p1
+        self.p2                     = p2                         
+        self.dictSensors            = {}
         
-        self.StaticInitialization = True
-        Emodulus = self.Emodulus
-        nu = 0.3
-        rho = self.density
-        mat         = KirchhoffMaterial(Emodulus, nu, rho)
-        #varType1    = exu.OutputVariableType.StressLocal
-        varType2    = exu.OutputVariableType.StrainLocal
+        self.StaticInitialization   = True
+        Emodulus                    = 2.1e11
+        nu                          = 0.3
+        rho                         = 7850
+        mat                         = KirchhoffMaterial(Emodulus, nu, rho)
+        varType2                    = exu.OutputVariableType.StrainLocal
     
         #Ground body
-        oGround         = self.mbs.AddObject(ObjectGround())
-        markerGround    = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=oGround, localPosition=[0, 0, 0]))
-        iCube1          = RigidBodyInertia(mass=m1, com=pMid1,inertiaTensor=Inertia1,inertiaTensorAtCOM=True)
+        oGround                     = self.mbs.AddObject(ObjectGround())
+        markerGround                = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=oGround, localPosition=[0, 0, 0]))
+        iCube1                      = RigidBodyInertia(mass=m1, com=pMid1,inertiaTensor=Inertia1,inertiaTensorAtCOM=True)
         
         # Definintion of pillar as body in Exudyn and node n1
-        [n1, b1]        = AddRigidBody(mainSys=self.mbs,inertia=iCube1,nodeType=exu.NodeType.RotationEulerParameters,
-                                     position=PillarP,rotationMatrix=np.diag([1, 1, 1]),gravity=[0, -9.8066, 0] ,#graphicsDataList=[graphicsCOM1, graphicsBody1]
-                                     )
-        Marker3         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark3))                     #With Ground
-        Marker4         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark4))            #Lift Boom
-        Marker5         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark5))        # Cylinder 1 position
+        [n1, b1]                    = AddRigidBody(mainSys=self.mbs,inertia=iCube1,nodeType=exu.NodeType.RotationEulerParameters,
+                                                   position=PillarP,rotationMatrix=np.diag([1, 1, 1]),gravity=[0, -9.8066, 0] ,#graphicsDataList=[graphicsCOM1, graphicsBody1]
+                                                   )
+        Marker3                     = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark3))                     #With Ground
+        Marker4                     = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark4))            #Lift Boom
+        Marker5                     = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark5))        # Cylinder 1 position
         
         # Fixed joint between Pillar and Ground
         self.mbs.AddObject(GenericJoint(markerNumbers=[markerGround, Marker3],constrainedAxes=[1, 1, 1, 1, 1, 1],
                                         visualization=VObjectJointGeneric(axesRadius=0.2*W1,axesLength=1.4*W1)))
         
-        #filePath        = '' #To load fine mesh data from Abaqus
-        #folder_name     = os.path.join(filePath, f"theta1_{self.theta1:.2f}")
-
-        filePath         = 'AbaqusMesh/Job-1'
         
-        if not self.loadFromSavedNPY: 
-            start_time      = time.time()
+        if self.Flexible:
+            filePath               = 'AbaqusMesh/Job-1'
+        
+            if not self.loadFromSavedNPY: 
+                start_time              = time.time()
+                nodes1                  = feL.ImportFromAbaqusInputFile(filePath+'.inp', typeName='Part', name='Job-1')
+                feL.ReadMassMatrixFromAbaqus(fileName=filePath + '_MASS2.mtx')             #Load mass matrix
+                feL.ReadStiffnessMatrixFromAbaqus(fileName=filePath + '_STIF2.mtx')        #Load stiffness matrix
+                feL.SaveToFile(filePath,mode='PKL')
             
-            nodes1          = feL.ImportFromAbaqusInputFile(filePath+'.inp', typeName='Part', name='Job-1')
-            feL.ReadMassMatrixFromAbaqus(fileName=filePath + '_MASS2.mtx')             #Load mass matrix
-            feL.ReadStiffnessMatrixFromAbaqus(fileName=filePath + '_STIF2.mtx')        #Load stiffness matrix
-            feL.SaveToFile(filePath,mode='PKL')
-            
-            if self.verboseMode:
+                if self.verboseMode:
                     print("--- saving LiftBoom FEM Abaqus data took: %s seconds ---" % (time.time() - start_time)) 
                     
                  
-        else:       
-            if self.verboseMode:
-                print('importing Abaqus FEM data structure of Lift Boom...')
-            start_time = time.time()
-            
-            feL.LoadFromFile(filePath,mode='PKL')
-            
-            cpuTime = time.time() - start_time
-            if self.verboseMode:
-                print("--- importing FEM data took: %s seconds ---" % (cpuTime))
+            else:       
+                    if self.verboseMode:
+                        print('importing Abaqus FEM data structure of Lift Boom...')
+                    
+                    start_time          = time.time()
+                    feL.LoadFromFile(filePath,mode='PKL')
+                    cpuTime             = time.time() - start_time
+                    
+                    if self.verboseMode:
+                        print("--- importing FEM data took: %s seconds ---" % (cpuTime))
                     
         
                     
-        p2                  = [0, 0,-100*1e-3]
-        p1                  = [0, 0, 100*1e-3]
-        radius1             = 25*1e-3
-        nodeListJoint1      = feL.GetNodesOnCylinder(p1, p2, radius1, tolerance=1e-4) 
-        pJoint1             = feL.GetNodePositionsMean(nodeListJoint1)
-        nodeListJoint1Len   = len(nodeListJoint1)
-        noodeWeightsJoint1  = [1/nodeListJoint1Len]*nodeListJoint1Len
-        noodeWeightsJoint1  =feL.GetNodeWeightsFromSurfaceAreas(nodeListJoint1)
+            p2                  = [0, 0,-100*1e-3]
+            p1                  = [0, 0, 100*1e-3]
+            radius1             = 25*1e-3
+            nodeListJoint1      = feL.GetNodesOnCylinder(p1, p2, radius1, tolerance=1e-4) 
+            pJoint1             = feL.GetNodePositionsMean(nodeListJoint1)
+            nodeListJoint1Len   = len(nodeListJoint1)
+            noodeWeightsJoint1  = [1/nodeListJoint1Len]*nodeListJoint1Len
+            noodeWeightsJoint1  = feL.GetNodeWeightsFromSurfaceAreas(nodeListJoint1)
             
-        
-        p4                  = [304.19*1e-3,-100.01*1e-3,-100*1e-3]
-        p3                  = [304.19*1e-3,-100.01*1e-3, 100*1e-3]
-        radius2             = 36*1e-3
-        nodeListPist1       = feL.GetNodesOnCylinder(p3, p4, radius2, tolerance=1e-2)  
-        pJoint2             = feL.GetNodePositionsMean(nodeListPist1)
-        nodeListPist1Len    = len(nodeListPist1)
-        noodeWeightsPist1   = [1/nodeListPist1Len]*nodeListPist1Len
+            p4                  = [304.19*1e-3,-100.01*1e-3,-100*1e-3]
+            p3                  = [304.19*1e-3,-100.01*1e-3, 100*1e-3]
+            radius2             = 36*1e-3
+            nodeListPist1       = feL.GetNodesOnCylinder(p3, p4, radius2, tolerance=1e-2)  
+            pJoint2             = feL.GetNodePositionsMean(nodeListPist1)
+            nodeListPist1Len    = len(nodeListPist1)
+            noodeWeightsPist1   = [1/nodeListPist1Len]*nodeListPist1Len
             
-        if self.mL != 0:
-            p10                 = [2875*1e-3,15.15*1e-3,    74*1e-3]
-            p9                  = [2875*1e-3,15.15*1e-3,   -74*1e-3]
-            radius5             = 46*1e-3
-            nodeListJoint3      = feL.GetNodesOnCylinder(p9, p10, radius5, tolerance=1e-4)  
-            pJoint5             = feL.GetNodePositionsMean(nodeListJoint3)
-            nodeListJoint3Len   = len(nodeListJoint3)
-            noodeWeightsJoint3  = [1/nodeListJoint3Len]*nodeListJoint3Len
+            if self.mL != 0:
+                p10             = [2875*1e-3,15.15*1e-3,    74*1e-3]
+                p9              = [2875*1e-3,15.15*1e-3,   -74*1e-3]
+                radius5         = 46*1e-3
+                nodeListJoint3  = feL.GetNodesOnCylinder(p9, p10, radius5, tolerance=1e-4)  
+                pJoint5         = feL.GetNodePositionsMean(nodeListJoint3)
+                nodeListJoint3Len= len(nodeListJoint3)
+                noodeWeightsJoint3  = [1/nodeListJoint3Len]*nodeListJoint3Len
             
             
-            # STEP 2: Craig-Bampton Modes
-            boundaryList        = [nodeListJoint1, nodeListPist1, nodeListJoint3]
+                # STEP 2: Craig-Bampton Modes
+                boundaryList        = [nodeListJoint1, nodeListPist1, nodeListJoint3]
             
-        else: 
-             # STEP 2: Craig-Bampton Modes
-             boundaryList        = [nodeListJoint1, nodeListPist1]
+            else: 
+                # STEP 2: Craig-Bampton Modes
+                boundaryList        = [nodeListJoint1, nodeListPist1]
     
         
-        start_time          = time.time()
+            start_time          = time.time()
 
-        if self.loadFromSavedNPY:
-            if self.mL != 0:
-                feL.LoadFromFile('AbaqusMesh/feL_Load',mode='PKL')
+            if self.loadFromSavedNPY:
+                    if self.mL != 0:
+                        feL.LoadFromFile('AbaqusMesh/feL_Load',mode='PKL')
+                    else:
+                        feL.LoadFromFile('AbaqusMesh/feL',mode='PKL')
             else:
-                feL.LoadFromFile('AbaqusMesh/feL',mode='PKL')
-           
-        else:
-          feL.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryList, nEigenModes=self.nModes, 
+                feL.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryList, nEigenModes=self.nModes, 
                                                     useSparseSolver=True,computationMode = HCBstaticModeSelection.RBE2) 
           
-          print("ComputePostProcessingModes ... (may take a while)")
-          #feL.ComputePostProcessingModes(material=mat,outputVariableType=varType1,)
-          feL.ComputePostProcessingModes(material=mat,outputVariableType=varType2,)
+                print("ComputePostProcessingModes ... (may take a while)")
+                feL.ComputePostProcessingModes(material=mat,outputVariableType=varType2,)
          
-          if self.mL != 0:  
-              feL.SaveToFile('AbaqusMesh/feL_Load', mode='PKL')
-          else:
-              feL.SaveToFile('AbaqusMesh/feL', mode='PKL')
+                if self.mL != 0:  
+                    feL.SaveToFile('AbaqusMesh/feL_Load', mode='PKL')
+                else:
+                    feL.SaveToFile('AbaqusMesh/feL', mode='PKL')
               
-        if self.verboseMode:
-            print("Hurty-Craig Bampton modes... ")
-            print("eigen freq.=", feL.GetEigenFrequenciesHz())
-            print("HCB modes needed %.3f seconds" % (time.time() - start_time))  
+            if self.verboseMode:
+                print("Hurty-Craig Bampton modes... ")
+                print("eigen freq.=", feL.GetEigenFrequenciesHz())
+                print("HCB modes needed %.3f seconds" % (time.time() - start_time))  
 
-        colLift = color4blue
-       
-        LiftBoom            = ObjectFFRFreducedOrderInterface(feL)
 
-        LiftBoomFFRF        = LiftBoom.AddObjectFFRFreducedOrder(self.mbs, positionRef=np.array(Mark4), 
+            colLift = color4blue
+            LiftBoom            = ObjectFFRFreducedOrderInterface(feL)
+
+            LiftBoomFFRF        = LiftBoom.AddObjectFFRFreducedOrder(self.mbs, positionRef=np.array(Mark4), 
                                           initialVelocity=[0,0,0], 
                                           initialAngularVelocity=[0,0,0],
                                           rotationMatrixRef  = RotationMatrixZ(mt.radians(self.theta1)),
@@ -141,19 +135,27 @@ def LiftBoom(self, theta1, p1, p2):
                                          massProportionalDamping = 0, stiffnessProportionalDamping = 3.35e-3 ,
                                          color=colLift,)
         
-        # self.mbs.SetObjectParameter(objectNumber=LiftBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',
-        #                                     value=varType1)
-        
-        self.mbs.SetObjectParameter(objectNumber=LiftBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',
-                                            value=varType2)
+       
+            self.mbs.SetObjectParameter(objectNumber=LiftBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',value=varType2)
     
-        Marker7             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
-                                          meshNodeNumbers=np.array(nodeListJoint1), #these are the meshNodeNumbers
+            Marker7             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumbers=np.array(nodeListJoint1), #these are the meshNodeNumbers
                                           weightingFactors=noodeWeightsJoint1))
-        Marker8             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
-                                          meshNodeNumbers=np.array(nodeListPist1), #these are the meshNodeNumbers
+            Marker8             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumbers=np.array(nodeListPist1), #these are the meshNodeNumbers
                                           weightingFactors=noodeWeightsPist1))
         
+        
+        else:
+            iCube2          = RigidBodyInertia(mass=m2, com=pMid2,inertiaTensor=Inertia2,inertiaTensorAtCOM=True)
+            graphicsCOM2    = GraphicsDataBasis(origin=iCube2.com, length=2*W2)
+
+            [n2, b2]        = AddRigidBody(mainSys=self.mbs,inertia=iCube2,nodeType=exu.NodeType.RotationEulerParameters,position=LiftP,  
+                                           rotationMatrix= RotationMatrixZ(mt.radians(self.theta1)), gravity= [0, -9.8066, 0],
+                                           graphicsDataList=[graphicsCOM2, graphicsBody2])
+    
+            Marker7         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[0, 0, 0]))                       #With Pillar     
+            Marker8         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[0.3025, -0.105, 0]))             #With Cylinder 1
+    
+            
         #Revolute Joint
         self.mbs.AddObject(GenericJoint(markerNumbers=[Marker4, Marker7],constrainedAxes=[1,1,1,1,1,0],
                                         visualization=VObjectJointGeneric(axesRadius=0.18*0.263342,axesLength=1.1*0.263342)))
@@ -161,9 +163,14 @@ def LiftBoom(self, theta1, p1, p2):
        
         # Add load 
         if self.mL != 0:
-            Marker9             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
+            if self.Flexible:
+                Marker9             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
                                               meshNodeNumbers=np.array(nodeListJoint3), #these are the meshNodeNumbers
                                               weightingFactors=noodeWeightsJoint3))
+            
+            else:
+                Marker9             = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[2875*1e-3,15.15*1e-3])) 
+                
             
             pos = self.mbs.GetMarkerOutput(Marker9, variableType=exu.OutputVariableType.Position, 
                                            configuration=exu.ConfigurationType.Reference)
@@ -196,8 +203,8 @@ def LiftBoom(self, theta1, p1, p2):
         #     return   1*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
           
             
-        oFriction1       = self.mbs.AddObject(ObjectConnectorSpringDamper(markerNumbers=[Marker5, Marker8], referenceLength=0.001,stiffness=2000,
-                                                            damping=1e4, force=0, velocityOffset = 0., activeConnector = True,
+        oFriction1       = self.mbs.AddObject(ObjectConnectorSpringDamper(markerNumbers=[Marker5, Marker8], referenceLength=0.001,stiffness=0*2000,
+                                                            damping=0*1e4, force=0, velocityOffset = 0., activeConnector = True,
                                                             springForceUserFunction=CylinderFriction1,
                                                               visualization=VSpringDamper(show=False) ))
         
@@ -212,7 +219,7 @@ def LiftBoom(self, theta1, p1, p2):
             oHA1                = self.mbs.AddObject(HydraulicActuatorSimple(name='LiftCylinder', markerNumbers=[ Marker5, Marker8], 
                                                     nodeNumbers=[nODE1], offsetLength=L_Cyl1, strokeLength=L_Pis1, chamberCrossSection0=A[0], 
                                                     chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                    valveOpening1=0, actuatorDamping=6.40e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                    valveOpening1=0, actuatorDamping=1e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
                                                     hoseBulkModulus=Bh, nominalFlow=Qn, systemPressure=pS, tankPressure=pT, 
                                                     useChamberVolumeChange=True, activeConnector=True, 
                                                     visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
@@ -264,41 +271,27 @@ def LiftBoom(self, theta1, p1, p2):
         if self.verboseMode:
             print('#joint nodes=',len(nodeListJoint3))
 
-        TipNode     = feL.GetNodeAtPoint(np.array([2.829, 0.0151500003,  0.074000001]))
-        StressNode  = feL.GetNodeAtPoint(np.array([0.639392078,  0.110807151, 0.0799999982]))
+        if self.Flexible:
+            StressNode  = feL.GetNodeAtPoint(np.array([0.639392078,  0.110807151, 0.0799999982]))
         
-        if self.verboseMode:
-            print("nMid=",nMid)
-            print("nMid=",MarkerTip)
-
-    
-        # Add Sensor for deflection
-        DeflectionF          = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=TipNode, 
-                                                               storeInternal=True, outputVariableType=exu.OutputVariableType.DisplacementLocal ))
+            if self.verboseMode:
+                print("nMid=",nMid)
+                print("nMid=",MarkerTip)
         
-        StrainF1             = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=TipNode, 
+            StrainF2    = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StressNode, 
                                                                storeInternal=True, outputVariableType=varType2 ))
         
-        StrainF2             = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StressNode, 
-                                                               storeInternal=True, outputVariableType=varType2 ))
-        
-        # StressF              = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StressNode, 
-        #                                                        storeInternal=True, outputVariableType=varType1  ))
         
         
-        def UFStressData(mbs, t, sensorNumbers, factors, configuration):
+            def UFStressData(mbs, t, sensorNumbers, factors, configuration):
             
-            val = mbs.GetSensorValues(sensorNumbers[0])
-            
-            StressVec = mat.StrainVector2StressVector(val)
-            
-            return StressVec
+                val = mbs.GetSensorValues(sensorNumbers[0])
+                StressVec = mat.StrainVector2StressVector(val)
+                return StressVec
         
-        #StressF   = mat.StrainVector2StressVector(StrainF)
         
-        self.dictSensors['DeflectionTip']   = DeflectionF
-        self.dictSensors['StrainTip']       = StrainF1
-        self.dictSensors['StressPoint']     = self.mbs.AddSensor(SensorUserFunction(sensorNumbers=[StrainF2], 
+            self.dictSensors['StrainPoint']       = StrainF2
+            self.dictSensors['StressPoint']       = self.mbs.AddSensor(SensorUserFunction(sensorNumbers=[StrainF2], 
                                                         storeInternal=True, sensorUserFunction=UFStressData))
            
         if oHA1 != None:
@@ -311,37 +304,11 @@ def LiftBoom(self, theta1, p1, p2):
             self.dictSensors['sVelocity']=sVelocity
             sPressures      = self.mbs.AddSensor(SensorNode(nodeNumber=nODE1, storeInternal=True,outputVariableType=exu.OutputVariableType.Coordinates))   
             self.dictSensors['sPressures']=sPressures
-            sPressures_t    = self.mbs.AddSensor(SensorNode(nodeNumber=nODE1, storeInternal=True,outputVariableType=exu.OutputVariableType.Coordinates_t))   
-            self.dictSensors['sPressures_t']=sPressures_t
             
-            def UFsensor(mbs, t, sensorNumbers, factors, configuration):
-                val = mbs.GetObjectParameter(self.oHA1, 'valveOpening0')
-                return [val] #return angle in degree
-
-            sInput = self.mbs.AddSensor(SensorUserFunction(sensorNumbers=[], factors=[], 
-                                                           sensorUserFunction=UFsensor, storeInternal=True))
-            self.dictSensors['sInput'] = sInput
-
         #+++++++++++++++++++++++++++++++++++++++++++++++++++
         #assemble and solve    
         self.mbs.Assemble()
-        
-        # [eigenValues, eVectors] = self.mbs.ComputeODE2Eigenvalues(computeComplexEigenvalues=True,
-        #                                           useAbsoluteValues=False)
-        
-        # evNumerical = eigenValues / (2*np.pi)
-        # eigenFreqHz = abs(eigenValues[0].imag) / (2*np.pi)
-        # eigenDRel = abs(eigenValues[0].real)
-        
-        # Re= np.max(eigenValues).real
-        # A=np.log(np.exp(np.max(eigenValues).real))
-        # exu.Print('numerical eigenvalues in Hz:',evNumerical) 
-        # exu.Print('Complex eigenvalues:',eigenValues)
-        # exu.Print('Numerical eigenfrequency in Hz:',eigenFreqHz)
-        # exu.Print('numerical damping dRel           :',eigenDRel/abs(eigenValues[0]))
 
-        
-        
         self.simulationSettings = exu.SimulationSettings()   
         self.simulationSettings.solutionSettings.sensorsWritePeriod = self.endTime / (self.nStepsTotal)
         
@@ -383,13 +350,6 @@ def LiftBoom(self, theta1, p1, p2):
                             updateInitialValues=True) #use solution as new initial values for next simulation
             exu.SuppressWarnings(False)
             
-            
-            t_dVec, eVal = EOM_SLIDE(self, A_d, nValues=5)
-            
-            self.n_etd   = round(np.max(t_dVec)/self.TimeStep)
-            
-            #print(self.n_etd)
-
             #now deactivate distance constraint:
             # self.mbs.SetObjectParameter(oDC, 'activeConnector', False)
             force = self.mbs.GetObjectOutput(oDC, variableType=exu.OutputVariableType.Force)
@@ -455,14 +415,11 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
        self.dictSensors = {}
        
        self.StaticInitialization = True
-       Emodulus = self.Emodulus
-       nu = 0.3
-       rho = self.density
-       mat         = KirchhoffMaterial(Emodulus, nu, rho)
-       #mat1        = KirchhoffMaterial(70e9, 0.33, 2700)
-       varType1    = exu.OutputVariableType.StrainLocal
-       #varType2    = exu.OutputVariableType.StrainLocal
-       #varType3    = exu.OutputVariableType.StrainLocal
+       Emodulus                  = 2.1e11
+       nu                        = 0.3
+       rho                       = 7850
+       mat                       = KirchhoffMaterial(Emodulus, nu, rho)
+       varType1                  = exu.OutputVariableType.StrainLocal
    
        #Ground body
        oGround         = self.mbs.AddObject(ObjectGround())
@@ -480,196 +437,205 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
        # Fixed joint between Pillar and Ground
        self.mbs.AddObject(GenericJoint(markerNumbers=[markerGround, Marker3],constrainedAxes=[1, 1, 1, 1, 1, 1],
                                        visualization=VObjectJointGeneric(axesRadius=0.2*W1,axesLength=1.4*W1)))
-       
-       #filePath        = '' #To load fine mesh data from Abaqus
-       #folder_name     = os.path.join(filePath, f"theta1_{self.theta1:.2f}")
 
-       filePath         = 'AbaqusMesh/Job-1'
-       filePath2        = 'AbaqusMesh/Job-2'
+       if self.Flexible:
+           filePath        = 'AbaqusMesh/Job-1'
+           filePath2       = 'AbaqusMesh/Job-2'
   
-       if not self.loadFromSavedNPY: 
-          start_time      = time.time()
+           if not self.loadFromSavedNPY: 
+               start_time      = time.time()
           
-          nodes1          = feL.ImportFromAbaqusInputFile(filePath+'.inp', typeName='Part', name='Job-1')
-          feL.ReadMassMatrixFromAbaqus(fileName=filePath + '_MASS2.mtx')             #Load mass matrix
-          feL.ReadStiffnessMatrixFromAbaqus(fileName=filePath + '_STIF2.mtx')        #Load stiffness matrix
-          feL.SaveToFile(filePath,mode='PKL')
+               nodes1          = feL.ImportFromAbaqusInputFile(filePath+'.inp', typeName='Part', name='Job-1')
+               feL.ReadMassMatrixFromAbaqus(fileName=filePath + '_MASS2.mtx')             #Load mass matrix
+               feL.ReadStiffnessMatrixFromAbaqus(fileName=filePath + '_STIF2.mtx')        #Load stiffness matrix
+               feL.SaveToFile(filePath,mode='PKL')
           
-          nodes2          = feT.ImportFromAbaqusInputFile(filePath2+'.inp', typeName='Part', name='Job-2')
-          feT.ReadMassMatrixFromAbaqus(fileName=filePath2 + '_MASS2.mtx')             #Load mass matrix
-          feT.ReadStiffnessMatrixFromAbaqus(fileName=filePath2 + '_STIF2.mtx')        #Load stiffness matrix
-          feT.SaveToFile(filePath2,mode='PKL')
+               nodes2          = feT.ImportFromAbaqusInputFile(filePath2+'.inp', typeName='Part', name='Job-2')
+               feT.ReadMassMatrixFromAbaqus(fileName=filePath2 + '_MASS2.mtx')             #Load mass matrix
+               feT.ReadStiffnessMatrixFromAbaqus(fileName=filePath2 + '_STIF2.mtx')        #Load stiffness matrix
+               feT.SaveToFile(filePath2,mode='PKL')
           
-          if self.verboseMode:
+               if self.verboseMode:
                   print("--- saving LiftBoom FEM Abaqus data took: %s seconds ---" % (time.time() - start_time)) 
                   
+           else:       
+               if self.verboseMode:
+                   print('importing Abaqus FEM data structure of Lift Boom...')
                
-       else:       
-          if self.verboseMode:
-              print('importing Abaqus FEM data structure of Lift Boom...')
-          start_time = time.time()
+               start_time = time.time()
           
-          feL.LoadFromFile(filePath,mode='PKL')
-          feT.LoadFromFile(filePath2,mode='PKL')
+               feL.LoadFromFile(filePath,mode='PKL')
+               feT.LoadFromFile(filePath2,mode='PKL')
           
-          cpuTime = time.time() - start_time
-          if self.verboseMode:
-              print("--- importing FEM data took: %s seconds ---" % (cpuTime))
+               cpuTime = time.time() - start_time
+               if self.verboseMode:
+                   print("--- importing FEM data took: %s seconds ---" % (cpuTime))
                    
        
                    
-       p2                  = [0, 0,-100*1e-3]
-       p1                  = [0, 0, 100*1e-3]
-       radius1             = 25*1e-3
-       nodeListJoint1      = feL.GetNodesOnCylinder(p1, p2, radius1, tolerance=1e-4) 
-       pJoint1             = feL.GetNodePositionsMean(nodeListJoint1)
-       nodeListJoint1Len   = len(nodeListJoint1)
-       noodeWeightsJoint1  = [1/nodeListJoint1Len]*nodeListJoint1Len
-       noodeWeightsJoint1  =feL.GetNodeWeightsFromSurfaceAreas(nodeListJoint1)
+           p2                  = [0, 0,-100*1e-3]
+           p1                  = [0, 0, 100*1e-3]
+           radius1             = 25*1e-3
+           nodeListJoint1      = feL.GetNodesOnCylinder(p1, p2, radius1, tolerance=1e-4) 
+           pJoint1             = feL.GetNodePositionsMean(nodeListJoint1)
+           nodeListJoint1Len   = len(nodeListJoint1)
+           noodeWeightsJoint1  = [1/nodeListJoint1Len]*nodeListJoint1Len
+           noodeWeightsJoint1  =feL.GetNodeWeightsFromSurfaceAreas(nodeListJoint1)
            
        
-       p4                  = [304.19*1e-3,-100.01*1e-3,-100*1e-3]
-       p3                  = [304.19*1e-3,-100.01*1e-3, 100*1e-3]
-       radius2             = 36*1e-3
-       nodeListPist1       = feL.GetNodesOnCylinder(p3, p4, radius2, tolerance=1e-2)  
-       pJoint2             = feL.GetNodePositionsMean(nodeListPist1)
-       nodeListPist1Len    = len(nodeListPist1)
-       noodeWeightsPist1   = [1/nodeListPist1Len]*nodeListPist1Len
+           p4                  = [304.19*1e-3,-100.01*1e-3,-100*1e-3]
+           p3                  = [304.19*1e-3,-100.01*1e-3, 100*1e-3]
+           radius2             = 36*1e-3
+           nodeListPist1       = feL.GetNodesOnCylinder(p3, p4, radius2, tolerance=1e-2)  
+           pJoint2             = feL.GetNodePositionsMean(nodeListPist1)
+           nodeListPist1Len    = len(nodeListPist1)
+           noodeWeightsPist1   = [1/nodeListPist1Len]*nodeListPist1Len
        
-       # Boundary condition at cylinder 1
-       p6                  = [1258e-3,194.59e-3,  65.701e-3]
-       p5                  = [1258e-3,194.59e-3, -65.701e-3]
-       radius3             = 32e-3
-       nodeListCyl2        = feL.GetNodesOnCylinder(p5, p6, radius3, tolerance=1e-2)  
-       pJoint3             = feL.GetNodePositionsMean(nodeListCyl2)
-       nodeListCyl2Len     = len(nodeListCyl2)
-       noodeWeightsCyl2    = [1/nodeListCyl2Len]*nodeListCyl2Len 
+           # Boundary condition at cylinder 1
+           p6                  = [1258e-3,194.59e-3,  65.701e-3]
+           p5                  = [1258e-3,194.59e-3, -65.701e-3]
+           radius3             = 32e-3
+           nodeListCyl2        = feL.GetNodesOnCylinder(p5, p6, radius3, tolerance=1e-2)  
+           pJoint3             = feL.GetNodePositionsMean(nodeListCyl2)
+           nodeListCyl2Len     = len(nodeListCyl2)
+           noodeWeightsCyl2    = [1/nodeListCyl2Len]*nodeListCyl2Len 
                    
-       # Boundary condition at Joint 2
-       p8                  = [2685e-3,0.15e-03,  74e-3]
-       p7                  = [2685e-3,0.15e-03, -74e-3]
-       radius4             = 32e-3
-       nodeListJoint2      = feL.GetNodesOnCylinder(p7, p8, radius4, tolerance=1e-4)  
-       pJoint4             = feL.GetNodePositionsMean(nodeListJoint2)
-       nodeListJoint2Len   = len(nodeListJoint2)
-       noodeWeightsJoint2  = [1/nodeListJoint2Len]*nodeListJoint2Len
+           # Boundary condition at Joint 2
+           p8                  = [2685e-3,0.15e-03,  74e-3]
+           p7                  = [2685e-3,0.15e-03, -74e-3]
+           radius4             = 32e-3
+           nodeListJoint2      = feL.GetNodesOnCylinder(p7, p8, radius4, tolerance=1e-4)  
+           pJoint4             = feL.GetNodePositionsMean(nodeListJoint2)
+           nodeListJoint2Len   = len(nodeListJoint2)
+           noodeWeightsJoint2  = [1/nodeListJoint2Len]*nodeListJoint2Len
                
-       # Joint 3
-       p10                 = [2875e-3,15.15e-3,    74e-3]
-       p9                  = [2875e-3,15.15e-3,   -74e-3]
-       radius5             = 4.60e-002
-       nodeListJoint3      = feL.GetNodesOnCylinder(p9, p10, radius5, tolerance=1e-4)  
-       pJoint5             = feL.GetNodePositionsMean(nodeListJoint3)
-       nodeListJoint3Len   = len(nodeListJoint3)
-       noodeWeightsJoint3  = [1/nodeListJoint3Len]*nodeListJoint3Len
+           # Joint 3
+           p10                 = [2875e-3,15.15e-3,    74e-3]
+           p9                  = [2875e-3,15.15e-3,   -74e-3]
+           radius5             = 4.60e-002
+           nodeListJoint3      = feL.GetNodesOnCylinder(p9, p10, radius5, tolerance=1e-4)  
+           pJoint5             = feL.GetNodePositionsMean(nodeListJoint3)
+           nodeListJoint3Len   = len(nodeListJoint3)
+           noodeWeightsJoint3  = [1/nodeListJoint3Len]*nodeListJoint3Len
                
-       # Boundary condition at pillar
-       p12                 = [0, 0,  88e-3]
-       p11                 = [0, 0, -88e-3]
-       radius6             = 48e-3
-       nodeListJoint1T     = feT.GetNodesOnCylinder(p11, p12, radius6, tolerance=1e-4) 
-       pJoint1T            = feT.GetNodePositionsMean(nodeListJoint1T)
-       nodeListJoint1TLen  = len(nodeListJoint1T)
-       noodeWeightsJoint1T = [1/nodeListJoint1TLen]*nodeListJoint1TLen
+           # Boundary condition at pillar
+           p12                 = [0, 0,  88e-3]
+           p11                 = [0, 0, -88e-3]
+           radius6             = 48e-3
+           nodeListJoint1T     = feT.GetNodesOnCylinder(p11, p12, radius6, tolerance=1e-4) 
+           pJoint1T            = feT.GetNodePositionsMean(nodeListJoint1T)
+           nodeListJoint1TLen  = len(nodeListJoint1T)
+           noodeWeightsJoint1T = [1/nodeListJoint1TLen]*nodeListJoint1TLen
                    
-       # Boundary condition at Piston 1
-       p14                 = [-95e-3,243.2e-3,  55.511e-3]
-       p13                 = [-95e-3,243.2e-3, -55.511e-3]
-       radius7             = 26e-3
-       nodeListPist1T      = feT.GetNodesOnCylinder(p13, p14, radius7, tolerance=1e-4)  
-       pJoint2T            = feT.GetNodePositionsMean(nodeListPist1T)
-       nodeListPist1TLen   = len(nodeListPist1T)
-       noodeWeightsPist1T  = [1/nodeListPist1TLen]*nodeListPist1TLen
+           # Boundary condition at Piston 1
+           p14                 = [-95e-3,243.2e-3,  55.511e-3]
+           p13                 = [-95e-3,243.2e-3, -55.511e-3]
+           radius7             = 26e-3
+           nodeListPist1T      = feT.GetNodesOnCylinder(p13, p14, radius7, tolerance=1e-4)  
+           pJoint2T            = feT.GetNodePositionsMean(nodeListPist1T)
+           nodeListPist1TLen   = len(nodeListPist1T)
+           noodeWeightsPist1T  = [1/nodeListPist1TLen]*nodeListPist1TLen
 
-        # Boundary condition at extension boom
-       p16                 = [-415e-3,287e-3, 48.011e-3]
-       p15                 = [-415e-3,287e-3, -48.011e-3]
-       radius8             = 2.3e-002
-       nodeListExtT        = feT.GetNodesOnCylinder(p15, p16, radius8, tolerance=1e-4)  
-       pExtT               = feT.GetNodePositionsMean(nodeListExtT)
-       nodeListExTLen      = len(nodeListExtT)
-       noodeWeightsExt1T   = [1/nodeListExTLen]*nodeListExTLen
+           # Boundary condition at extension boom
+           p16                 = [-415e-3,287e-3, 48.011e-3]
+           p15                 = [-415e-3,287e-3, -48.011e-3]
+           radius8             = 2.3e-002
+           nodeListExtT        = feT.GetNodesOnCylinder(p15, p16, radius8, tolerance=1e-4)  
+           pExtT               = feT.GetNodePositionsMean(nodeListExtT)
+           nodeListExTLen      = len(nodeListExtT)
+           noodeWeightsExt1T   = [1/nodeListExTLen]*nodeListExTLen
            
        
-       # STEP 2: Craig-Bampton Modes
-       boundaryListL   = [nodeListJoint1,nodeListPist1, nodeListJoint2,  nodeListJoint3] 
-       boundaryListT  = [nodeListJoint1T, nodeListPist1T,nodeListExtT]
+           # STEP 2: Craig-Bampton Modes
+           boundaryListL   = [nodeListJoint1,nodeListPist1, nodeListJoint2,  nodeListJoint3] 
+           boundaryListT  = [nodeListJoint1T, nodeListPist1T,nodeListExtT]
    
-       
-       start_time          = time.time()
+           start_time          = time.time()
 
-       if self.loadFromSavedNPY:
+           if self.loadFromSavedNPY:
                feL.LoadFromFile('AbaqusMesh/feL',mode='PKL')
                feT.LoadFromFile('AbaqusMesh/feT',mode='PKL')
 
           
-       else:
-         feL.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListL, nEigenModes=10, 
+           else:
+               feL.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListL, nEigenModes=10, 
                                                    useSparseSolver=True,computationMode = HCBstaticModeSelection.RBE2) 
-         feT.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListT, nEigenModes=10, 
+               feT.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListT, nEigenModes=10, 
                                                          useSparseSolver=True,computationMode = HCBstaticModeSelection.RBE2) 
          
-         print("ComputePostProcessingModes ... (may take a while)")
-         #feL.ComputePostProcessingModes(material=mat,outputVariableType=varType1,)
-         feL.ComputePostProcessingModes(material=mat,outputVariableType=varType1,)
-         feT.ComputePostProcessingModes(material=mat,outputVariableType=varType1,)
+               print("ComputePostProcessingModes ... (may take a while)")
+               feL.ComputePostProcessingModes(material=mat,outputVariableType=varType1,)
+               feT.ComputePostProcessingModes(material=mat,outputVariableType=varType1,)
         
-         feL.SaveToFile('AbaqusMesh/feL', mode='PKL')
-         feT.SaveToFile('AbaqusMesh/feT', mode='PKL')
+               feL.SaveToFile('AbaqusMesh/feL', mode='PKL')
+               feT.SaveToFile('AbaqusMesh/feT', mode='PKL')
 
-       if self.verboseMode:
-           print("Hurty-Craig Bampton modes... ")
-           print("eigen freq.=", feL.GetEigenFrequenciesHz())
-           print("eigen freq.=", feT.GetEigenFrequenciesHz())
+           if self.verboseMode:
+               print("Hurty-Craig Bampton modes... ")
+               print("eigen freq.=", feL.GetEigenFrequenciesHz())
+               print("eigen freq.=", feT.GetEigenFrequenciesHz())
            
-           print("HCB modes needed %.3f seconds" % (time.time() - start_time))  
-
-       colLift = color4blue
-      
-       LiftBoom            = ObjectFFRFreducedOrderInterface(feL)
-       TiltBoom            = ObjectFFRFreducedOrderInterface(feT)
+               print("HCB modes needed %.3f seconds" % (time.time() - start_time)) 
                
-       LiftBoomFFRF        = LiftBoom.AddObjectFFRFreducedOrder(self.mbs, positionRef=np.array(Mark4), 
-                                        initialVelocity=[0,0,0], 
-                                        initialAngularVelocity=[0,0,0],
-                                        rotationMatrixRef  = RotationMatrixZ(mt.radians(self.theta1)),
-                                        gravity= [0, -9.8066, 0],
-                                        #massProportionalDamping = 0, stiffnessProportionalDamping = 1e-5 ,
-                                       massProportionalDamping = 0, stiffnessProportionalDamping = 3.35e-3 ,
-                                       color=colLift,)
-      
-       # self.mbs.SetObjectParameter(objectNumber=LiftBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',
-       #                                     value=varType1)
-       
-       self.mbs.SetObjectParameter(objectNumber=LiftBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',
+           colLift = color4blue
+           LiftBoom            = ObjectFFRFreducedOrderInterface(feL)
+           TiltBoom            = ObjectFFRFreducedOrderInterface(feT)
+           LiftBoomFFRF        = LiftBoom.AddObjectFFRFreducedOrder(self.mbs, positionRef=np.array(Mark4), initialVelocity=[0,0,0], 
+                                              initialAngularVelocity=[0,0,0], rotationMatrixRef  = RotationMatrixZ(mt.radians(self.theta1)),
+                                              gravity= [0, -9.8066, 0],#massProportionalDamping = 0, stiffnessProportionalDamping = 1e-5 ,
+                                             massProportionalDamping = 0, stiffnessProportionalDamping = 3.35e-3 ,color=colLift,)
+           self.mbs.SetObjectParameter(objectNumber=LiftBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',
                                            value=varType1)
    
-       Marker7             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
+           Marker7             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
                                          meshNodeNumbers=np.array(nodeListJoint1), #these are the meshNodeNumbers
                                          weightingFactors=noodeWeightsJoint1))
-       Marker8             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
+           Marker8             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
                                          meshNodeNumbers=np.array(nodeListPist1), #these are the meshNodeNumbers
                                          weightingFactors=noodeWeightsPist1))
        
-       Marker9             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
+           Marker9             = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
                                                       meshNodeNumbers=np.array(nodeListCyl2), #these are the meshNodeNumbers
                                                       weightingFactors=noodeWeightsCyl2)) 
-       Marker10        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
+           Marker10        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
                                                       meshNodeNumbers=np.array(nodeListJoint2), #these are the meshNodeNumbers
                                                       weightingFactors=noodeWeightsJoint2))      
                
-       Marker11        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
+           Marker11        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'],
                                                     meshNodeNumbers=np.array(nodeListJoint3), #these are the meshNodeNumbers
                                                     weightingFactors=noodeWeightsJoint3))
-       
+      
+       else:
+           
+           iCube2          = RigidBodyInertia(mass=m2, com=pMid2,inertiaTensor=Inertia2,inertiaTensorAtCOM=True)
+           graphicsCOM2    = GraphicsDataBasis(origin=iCube2.com, length=2*W2)
+           [n2, b2]        = AddRigidBody(mainSys=self.mbs,inertia=iCube2,nodeType=exu.NodeType.RotationEulerParameters,position=LiftP,  
+                                               rotationMatrix= RotationMatrixZ(mt.radians(self.theta1)), gravity= [0, -9.8066, 0], graphicsDataList=[graphicsCOM2, graphicsBody2])
         
+           Marker7         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[0, 0, 0]))                       #With Pillar    
+           Marker8         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[0.3025, -0.105, 0]))             #With Cylinder 1
+           Marker9         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[1.263, 0.206702194, 0]))         #With Cylinder 2
+           Marker10        = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[2.69, -0.006592554, 0]))         #With Bracket 1  
+           Marker11        = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[2.881080943, 0.021592554, 0]))   #With Tilt Boom
+           
+      
        if self.StaticCase or self.StaticInitialization:
-           #compute reference length of distance constraint 
-           self.mbs.Assemble()
-           TiltP = self.mbs.GetMarkerOutput(Marker11, variableType=exu.OutputVariableType.Position, configuration=exu.ConfigurationType.Initial)
+                #compute reference length of distance constraint 
+                self.mbs.Assemble()
+                TiltP = self.mbs.GetMarkerOutput(Marker11, variableType=exu.OutputVariableType.Position, configuration=exu.ConfigurationType.Initial)
        
-       
-       TiltBoomFFRF        = TiltBoom.AddObjectFFRFreducedOrder(self.mbs, positionRef=TiltP, #2.879420180699481+27e-3, -0.040690041435711005+8.3e-2, 0
+       if not self.Flexible: 
+           iCube3          = RigidBodyInertia(mass=m3, com=pMid3, inertiaTensor=Inertia3,inertiaTensorAtCOM=True)
+           graphicsCOM3    = GraphicsDataBasis(origin=iCube3.com, length=2*W3)
+           [n3, b3]        = AddRigidBody(mainSys=self.mbs,inertia=iCube3, nodeType=exu.NodeType.RotationEulerParameters,
+                                   position=TiltP, rotationMatrix=RotationMatrixZ(mt.radians(self.theta2)),
+                                   gravity= [0, -9.8066, 0],graphicsDataList=[graphicsCOM3, graphicsBody3])
+           Marker13        = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b3, localPosition=[0, 0, 0]))                        #With LIft Boom 
+           Marker14        = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b3, localPosition=[-0.095, 0.24043237, 0])) 
+           MarkerEx        = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b3, localPosition=[-0.415,0.295, 0]))
+           
+       else:    
+           TiltBoomFFRF        = TiltBoom.AddObjectFFRFreducedOrder(self.mbs, positionRef=TiltP, #2.879420180699481+27e-3, -0.040690041435711005+8.3e-2, 0
                                                           initialVelocity=[0,0,0], 
                                                           initialAngularVelocity=[0,0,0],
                                                           rotationMatrixRef  = RotationMatrixZ(mt.radians(self.theta2))   ,
@@ -678,23 +644,22 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
                                                          massProportionalDamping = 0, stiffnessProportionalDamping = 3.35e-3 ,
                                                           color=colLift,)
        
-       self.mbs.SetObjectParameter(objectNumber=TiltBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',
+           self.mbs.SetObjectParameter(objectNumber=TiltBoomFFRF['oFFRFreducedOrder'],parameterName='outputVariableTypeModeBasis',
                                            value=varType1)
        
-       Marker13        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], 
+           Marker13        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], 
                                                                              meshNodeNumbers=np.array(nodeListJoint1T), #these are the meshNodeNumbers
                                                                              weightingFactors=noodeWeightsJoint1T))
-               
-       Marker14        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], 
+           
+           Marker14        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], 
                                                                              meshNodeNumbers=np.array(nodeListPist1T), #these are the meshNodeNumbers
                                                                              weightingFactors=noodeWeightsPist1T))  
        
-       
-       MarkerEx        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], 
+           MarkerEx        = self.mbs.AddMarker(MarkerSuperElementRigid(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], 
                                                                              meshNodeNumbers=np.array(nodeListExtT), #these are the meshNodeNumbers
                                                                              weightingFactors=noodeWeightsExt1T))  
        
-       StrainPoint     = feT.GetNodeAtPoint(np.array([0.241222218,  0.347000003, 0.0390110984]))
+           StrainPoint     = feT.GetNodeAtPoint(np.array([0.241222218,  0.347000003, 0.0390110984]))
        
        #Revolute Joint
        self.mbs.AddObject(GenericJoint(markerNumbers=[Marker4, Marker7],constrainedAxes=[1,1,1,1,1,0],
@@ -900,7 +865,7 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            oHA1                = self.mbs.AddObject(HydraulicActuatorSimple(name='LiftCylinder', markerNumbers=[ Marker5, Marker8], 
                                                    nodeNumbers=[nODE1], offsetLength=L_Cyl1, strokeLength=L_Pis1, chamberCrossSection0=A[0], 
                                                    chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                   valveOpening1=0, actuatorDamping=1.5e6, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                   valveOpening1=0, actuatorDamping=0.5e6, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
                                                    hoseBulkModulus=Bh, nominalFlow=Qn1, systemPressure=250e5, tankPressure=pT, 
                                                    useChamberVolumeChange=True, activeConnector=True, 
                                                    visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
@@ -911,7 +876,7 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            oHA2 = self.mbs.AddObject(HydraulicActuatorSimple(name='TiltCylinder', markerNumbers=[Marker9, Marker16], 
                                                      nodeNumbers=[nODE2], offsetLength=LH2, strokeLength=L_Pis2, chamberCrossSection0=A[0], 
                                                      chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                     valveOpening1=0, actuatorDamping=1.5e6, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                     valveOpening1=0, actuatorDamping=1e6, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
                                                      hoseBulkModulus=Bh, nominalFlow=Qn2, systemPressure=250e5, tankPressure=pT, 
                                                      useChamberVolumeChange=True, activeConnector=True, 
                                                      visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
@@ -978,42 +943,28 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
        if self.verboseMode:
            print('#joint nodes=',len(nodeListJoint3))
 
-       TipNode     = feT.GetNodeAtPoint(np.array([1.80499995,  0.347000003, 0.0390110984]))
-       StressNode  = feL.GetNodeAtPoint(np.array([0.639392078,  0.110807151, 0.0799999982]))
+       if self.Flexible:
+           StressNode  = feL.GetNodeAtPoint(np.array([0.639392078,  0.110807151, 0.0799999982]))
        
-       if self.verboseMode:
-           print("nMid=",nMid)
-           print("nMid=",MarkerTip)
+           if self.verboseMode:
+               print("nMid=",nMid)
+               print("nMid=",MarkerTip)
 
    
-       # Add Sensor for deflection
-       DeflectionF          = self.mbs.AddSensor(SensorSuperElement(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=TipNode, 
-                                                              storeInternal=True, outputVariableType=exu.OutputVariableType.DisplacementLocal ))
+           # Add Sensor for deflection
+           StrainF2             = self.mbs.AddSensor(SensorSuperElement(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StrainPoint, storeInternal=True, outputVariableType=varType1))     
+           StrainF1            = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StressNode, storeInternal=True, outputVariableType=varType1 ))
        
-       StrainF1             = self.mbs.AddSensor(SensorSuperElement(bodyNumber=TiltBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StressNode, 
-                                                              storeInternal=True, outputVariableType=varType1))
+           def UFStressData(mbs, t, sensorNumbers, factors, configuration):
+                val = mbs.GetSensorValues(sensorNumbers[0])
+                StressVec = mat.StrainVector2StressVector(val)
+                return StressVec
        
-       StrainF2             = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StrainPoint, 
-                                                              storeInternal=True, outputVariableType=varType1 ))
-       
-       # StressF              = self.mbs.AddSensor(SensorSuperElement(bodyNumber=LiftBoomFFRF['oFFRFreducedOrder'], meshNodeNumber=StressNode, 
-       #                                                        storeInternal=True, outputVariableType=varType1  ))
-       
-       
-       def UFStressData(mbs, t, sensorNumbers, factors, configuration):
            
-           val = mbs.GetSensorValues(sensorNumbers[0])
-           
-           StressVec = mat.StrainVector2StressVector(val)
-           
-           return StressVec
-       
-       #StressF   = mat.StrainVector2StressVector(StrainF)
-       
-       self.dictSensors['DeflectionTip']   = DeflectionF
-       self.dictSensors['StrainTip']       = StrainF2
-       self.dictSensors['StressPoint']     = self.mbs.AddSensor(SensorUserFunction(sensorNumbers=[StrainF1], 
-                                                       storeInternal=True, sensorUserFunction=UFStressData))
+           self.dictSensors['StrainF1']       = StrainF1
+           self.dictSensors['StrainF2']       = StrainF2
+           self.dictSensors['Stress1']       = self.mbs.AddSensor(SensorUserFunction(sensorNumbers=[StrainF1], storeInternal=True, sensorUserFunction=UFStressData))
+           self.dictSensors['Stress2']       = self.mbs.AddSensor(SensorUserFunction(sensorNumbers=[StrainF2], storeInternal=True, sensorUserFunction=UFStressData))
           
        if oHA1 and oHA2 != None:
            sForce1          = self.mbs.AddSensor(SensorObject(objectNumber=oHA1, storeInternal=True, 
@@ -1094,17 +1045,7 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            self.mbs.SolveStatic(self.simulationSettings, 
                            updateInitialValues=True) #use solution as new initial values for next simulation
            exu.SuppressWarnings(False)
-           
-           
-           t_dVec, eVal = EOM_SLIDE(self, A_d, nValues=5)
-           
-           self.n_etd   = round(np.max(t_dVec)/self.TimeStep)
-           
-           #print(self.n_etd)
-
-           #now deactivate distance constraint:
-           # self.mbs.SetObjectParameter(oDC, 'activeConnector', False)
-           #now deactivate distance constraint:
+         
            force1 = self.mbs.GetObjectOutput(oDC, variableType=exu.OutputVariableType.Force)
            force2 = self.mbs.GetObjectOutput(oDCT, variableType=exu.OutputVariableType.Force)
            
