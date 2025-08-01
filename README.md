@@ -3,7 +3,7 @@ This project provides hydraulically actuated rigid and flexible crane models. Th
 The dynamic responses of these models have been validated against experimental data.
 
 ## Details
-- Rigid Multibody System Dynamics — Redundant and Minimal Coordinate Methods
+- Rigid Multibody System Dynamics — Redundant Coordinate Method
 - Flexible Multibody System Dynamics — Component Mode Synthesis 
 - Hydraulics – Lumped Fluid Theory
 - Actuator friction – Velocity-dependent Stribeck friction model
