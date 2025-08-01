@@ -2,7 +2,7 @@
 This project provides hydraulically actuated rigid and flexible crane models. The actual hydraulic parameters and geometric configuration align with existing PATU crane, available at the Laboratory of Intelligent Machines, LUT University. 
 The dynamic responses of these models have been validated against experimental data.
 
-## Models
+## Details
 - Rigid Multibody System Dynamics — Redundant and Minimal Coordinate Methods
 - Flexible Multibody System Dynamics — Component Mode Synthesis 
 - Hydraulics – Lumped Fluid Theory
@@ -16,9 +16,6 @@ The dynamic responses of these models have been validated against experimental d
 ## Folders and files
 - Parameters – 'Models/Container.py'
 - Controls – 'Models/Control.py' 
-- LiftBoom – 'solutions/OneArm/..' 
-- Patu – 'solutions/TwoArms/..' 
-
 
 ## Acknowledgements
 The author would like to thanks Prof. Johannes Gerstmayr for hosting me at University of Innsbruck, Department of Mechatronics, Innsbruck, Austria. His supervision enabled me to understand and write this code in Exudyn environment. Special thanks to Stefan Holzinger and Michael Pieber.
