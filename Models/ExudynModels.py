@@ -19,13 +19,16 @@ def LiftBoom(self, theta1, p1, p2):
         varType2                    = exu.OutputVariableType.StrainLocal
     
         #Ground body
-        oGround                     = self.mbs.AddObject(ObjectGround())
+        oGround                     = self.mbs.AddObject(ObjectGround(referencePosition=[0,0,0],
+                                                                          visualization=VObjectGround(graphicsData=[plane])))
+        
         markerGround                = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=oGround, localPosition=[0, 0, 0]))
         iCube1                      = RigidBodyInertia(mass=m1, com=pMid1,inertiaTensor=Inertia1,inertiaTensorAtCOM=True)
+        graphicsCOM1                = GraphicsDataBasis(origin=iCube1.com, length=2*W1)
         
         # Definintion of pillar as body in Exudyn and node n1
         [n1, b1]                    = AddRigidBody(mainSys=self.mbs,inertia=iCube1,nodeType=exu.NodeType.RotationEulerParameters,
-                                                   position=PillarP,rotationMatrix=np.diag([1, 1, 1]),gravity=[0, -9.8066, 0] ,#graphicsDataList=[graphicsCOM1, graphicsBody1]
+                                                   position=PillarP,rotationMatrix=np.diag([1, 1, 1]),gravity=[0, -9.8066, 0] ,graphicsDataList=[graphicsCOM1, graphicsBody1]
                                                    )
         Marker3                     = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark3))                     #With Ground
         Marker4                     = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark4))            #Lift Boom
@@ -195,23 +198,19 @@ def LiftBoom(self, theta1, p1, p2):
         # #Not used
         def CylinderFriction1(mbs, t, itemNumber, u, v, k, d, F0):
 
-                Ff = 1*StribeckFunction(v, muDynamic=1, muStaticOffset=1.5, regVel=1e-4)+(k*(u) + d*v + k*(u)**3-F0)
+                Ff = 0.2*StribeckFunction(v, muDynamic=1, muStaticOffset=1.5, regVel=1e-4)+(k*(u) + d*v + k*(u)**3-F0)
                 #print(Ff)
                 return Ff
             
-        # def UFfrictionSpringDamper(mbs, t, itemIndex, u, v, k, d, f0):
-        #     return   1*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
+        def UFfrictionSpringDamper(mbs, t, itemIndex, u, v, k, d, f0):
+            return   1*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
           
             
-        oFriction1       = self.mbs.AddObject(ObjectConnectorSpringDamper(markerNumbers=[Marker5, Marker8], referenceLength=0.001,stiffness=0*2000,
-                                                            damping=0*1e4, force=0, velocityOffset = 0., activeConnector = True,
+
+        oFriction1       = self.mbs.AddObject(ObjectConnectorSpringDamper(markerNumbers=[Marker5, Marker8], referenceLength=0,stiffness=0,
+                                                            damping=0, force=0, velocityOffset = 0., activeConnector = True,
                                                             springForceUserFunction=CylinderFriction1,
                                                               visualization=VSpringDamper(show=False) ))
-        
-        # oFriction1       = self.mbs.AddObject(ObjectConnectorSpringDamper(markerNumbers=[Marker5, Marker8], referenceLength=0.001,stiffness=0,
-        #                                                     damping=0, force=0, velocityOffset = 0., activeConnector = True,
-        #                                                     springForceUserFunction=UFfrictionSpringDamper,
-        #                                                       visualization=VSpringDamper(show=False) ))
         
        
         oHA1 = None
@@ -219,13 +218,14 @@ def LiftBoom(self, theta1, p1, p2):
             oHA1                = self.mbs.AddObject(HydraulicActuatorSimple(name='LiftCylinder', markerNumbers=[ Marker5, Marker8], 
                                                     nodeNumbers=[nODE1], offsetLength=L_Cyl1, strokeLength=L_Pis1, chamberCrossSection0=A[0], 
                                                     chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                    valveOpening1=0, actuatorDamping=1e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                    valveOpening1=0, actuatorDamping=2e4, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
                                                     hoseBulkModulus=Bh, nominalFlow=Qn, systemPressure=pS, tankPressure=pT, 
                                                     useChamberVolumeChange=True, activeConnector=True, 
                                                     visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
                                                                     'pistonRadius': 0.04, 'pistonLength': 0.001, 'rodMountRadius': 0.0, 
-                                                                    'baseMountRadius': 20.0e-3, 'baseMountLength': 20.0e-3, 'colorCylinder': color4orange,
-                                                                'colorPiston': color4grey}))
+                                                                    'baseMountRadius': 20.0e-3, 'baseMountLength': 20.0e-3, 'colorCylinder': color4blue,
+                                                                'colorPiston': color4grey}
+                                                    ))
             self.oHA1 = oHA1
 
         if self.StaticCase or self.StaticInitialization:
@@ -322,10 +322,12 @@ def LiftBoom(self, theta1, p1, p2):
         self.simulationSettings.displayStatistics                        = True
         # self.simulationSettings.displayComputationTime                   = True
         self.simulationSettings.linearSolverSettings.ignoreSingularJacobian=True
-        self.simulationSettings.timeIntegration.generalizedAlpha.spectralRadius  = 0.7
+        self.simulationSettings.timeIntegration.generalizedAlpha.spectralRadius  = 0.9
         self.SC.visualizationSettings.nodes.show = False
         #self.SC.visualizationSettings.contour.outputVariable = varType1
-        self.SC.visualizationSettings.contour.outputVariable = varType2
+        
+        if self.Flexible:
+            self.SC.visualizationSettings.contour.outputVariable = varType2
         
         if self.Visualization:
             self.SC.visualizationSettings.window.renderWindowSize            = [1600, 1200]        
@@ -422,13 +424,15 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
        varType1                  = exu.OutputVariableType.StrainLocal
    
        #Ground body
-       oGround         = self.mbs.AddObject(ObjectGround())
+       oGround                   = self.mbs.AddObject(ObjectGround(referencePosition=[0,0,0],
+                                                                          visualization=VObjectGround(graphicsData=[plane])))
        markerGround    = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=oGround, localPosition=[0, 0, 0]))
        iCube1          = RigidBodyInertia(mass=m1, com=pMid1,inertiaTensor=Inertia1,inertiaTensorAtCOM=True)
+       graphicsCOM1    = GraphicsDataBasis(origin=iCube1.com, length=2*L1)
        
        # Definintion of pillar as body in Exudyn and node n1
        [n1, b1]        = AddRigidBody(mainSys=self.mbs,inertia=iCube1,nodeType=exu.NodeType.RotationEulerParameters,
-                                    position=PillarP,rotationMatrix=np.diag([1, 1, 1]),gravity=[0, -9.8066, 0] ,#graphicsDataList=[graphicsCOM1, graphicsBody1]
+                                    position=PillarP,rotationMatrix=np.diag([1, 1, 1]),gravity=[0, -9.8066, 0] ,graphicsDataList=[graphicsCOM1, graphicsBody1]
                                     )
        Marker3         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark3))                     #With Ground
        Marker4         = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b1, localPosition=Mark4))            #Lift Boom
@@ -558,9 +562,9 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
 
           
            else:
-               feL.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListL, nEigenModes=10, 
+               feL.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListL, nEigenModes=self.nModes, 
                                                    useSparseSolver=True,computationMode = HCBstaticModeSelection.RBE2) 
-               feT.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListT, nEigenModes=10, 
+               feT.ComputeHurtyCraigBamptonModes(boundaryNodesList=boundaryListT, nEigenModes=self.nModes, 
                                                          useSparseSolver=True,computationMode = HCBstaticModeSelection.RBE2) 
          
                print("ComputePostProcessingModes ... (may take a while)")
@@ -829,31 +833,31 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
 
            Ff = 1*StribeckFunction(v, muDynamic=1, muStaticOffset=1.5, regVel=1e-4)+(k*(u) + d*v + k*(u)**3-F0)
            #print(Ff)
-           return Ff
+           return Ff*1
                 
        def CylinderFriction2(mbs, t, itemNumber, u, v, k, d, F0):
 
            Ff =  1*StribeckFunction(v, muDynamic=0.5, muStaticOffset=0.5, regVel=1e-2) - (k*(u) - d*v + k*(u)**3 -F0)
            #print(Ff)
-           return Ff*12
+           return Ff*1
                 
                 
-       def UFfrictionSpringDamper1(mbs, t, itemIndex, u, v, k, d, f0): 
-           return   1*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
+       # def UFfrictionSpringDamper1(mbs, t, itemIndex, u, v, k, d, f0): 
+       #     return   1*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
 
                     
-       def UFfrictionSpringDamper2(mbs, t, itemIndex, u, v, k, d, f0): 
-           return   0.5*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
+       # def UFfrictionSpringDamper2(mbs, t, itemIndex, u, v, k, d, f0): 
+       #     return   1*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
                     
                     
        oFriction1       = self.mbs.AddObject(ObjectConnectorSpringDamper(markerNumbers=[Marker5, Marker8], referenceLength=0,stiffness=2000,
                                                                  damping=0, force=0, velocityOffset = 0., activeConnector = True,
-                                                                 springForceUserFunction=CylinderFriction1,
+                                                                 springForceUserFunction=CylinderFriction1   , #CylinderFriction1,
                                                                    visualization=VSpringDamper(show=False) ))
                              
        oFriction2       = self.mbs.AddObject(ObjectConnectorSpringDamper(markerNumbers=[Marker9, Marker16], referenceLength=0,stiffness=1250,
                                                                    damping=0, force=0, velocityOffset = 0, activeConnector = True,
-                                                                   springForceUserFunction=CylinderFriction2,
+                                                                   springForceUserFunction= CylinderFriction2, #CylinderFriction2,
                                                                      visualization=VSpringDamper(show=False) ))
        
       
@@ -865,8 +869,8 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            oHA1                = self.mbs.AddObject(HydraulicActuatorSimple(name='LiftCylinder', markerNumbers=[ Marker5, Marker8], 
                                                    nodeNumbers=[nODE1], offsetLength=L_Cyl1, strokeLength=L_Pis1, chamberCrossSection0=A[0], 
                                                    chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                   valveOpening1=0, actuatorDamping=0.5e6, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
-                                                   hoseBulkModulus=Bh, nominalFlow=Qn1, systemPressure=250e5, tankPressure=pT, 
+                                                   valveOpening1=0, actuatorDamping=3e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                   hoseBulkModulus=Bh, nominalFlow=Qn1, systemPressure=pS, tankPressure=pT, 
                                                    useChamberVolumeChange=True, activeConnector=True, 
                                                    visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
                                                                    'pistonRadius': 0.04, 'pistonLength': 0.001, 'rodMountRadius': 0.0, 
@@ -876,8 +880,8 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            oHA2 = self.mbs.AddObject(HydraulicActuatorSimple(name='TiltCylinder', markerNumbers=[Marker9, Marker16], 
                                                      nodeNumbers=[nODE2], offsetLength=LH2, strokeLength=L_Pis2, chamberCrossSection0=A[0], 
                                                      chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                     valveOpening1=0, actuatorDamping=1e6, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
-                                                     hoseBulkModulus=Bh, nominalFlow=Qn2, systemPressure=250e5, tankPressure=pT, 
+                                                     valveOpening1=0, actuatorDamping=5e4, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                     hoseBulkModulus=Bh, nominalFlow=Qn2, systemPressure=pS, tankPressure=pT, 
                                                      useChamberVolumeChange=True, activeConnector=True, 
                                                      visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
                                                                      'pistonRadius': 0.04, 'pistonLength': 0.001, 'rodMountRadius': 0.0, 
@@ -1021,7 +1025,9 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
        self.simulationSettings.timeIntegration.generalizedAlpha.spectralRadius  = 0.7
        self.SC.visualizationSettings.nodes.show = False
        #self.SC.visualizationSettings.contour.outputVariable = varType1
-       self.SC.visualizationSettings.contour.outputVariable = varType1
+       
+       if self.Flexible:
+           self.SC.visualizationSettings.contour.outputVariable = varType1
        
        if self.Visualization:
            self.SC.visualizationSettings.window.renderWindowSize            = [1600, 1200]        

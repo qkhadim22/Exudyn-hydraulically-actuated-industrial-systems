@@ -1,27 +1,65 @@
 from Models.Container import *
 
+
+
 # Control signal 1
-def uref_1(t):
+def uref(t):
     
     
     #Lets comment this part and call 
     Lifting_Time_Start_1    = 1.00          # Start of lifting mass, m
-    Lifting_Time_End_1      = 1.50          # End of lifting mass, m
-    Lowering_Time_Start_1   = 2.0           # Start of lowering mass, m
-    Lowering_Time_End_1     = 3.5           # End of lowering mass, m
-    Lowering_Time_Start_2   = 4.5           # Start of lowering mass, m
-    Lowering_Time_End_2     = 6.0            # End of lowering mass, m
-    Lowering_Time_Start_3   = 7.5         # Start of lowering mass, m
-    Lowering_Time_End_3     = 9.0           # End of lowering mass, m
+    Lifting_Time_End_1      = 2.00          # End of lifting mass, m
+    Lowering_Time_Start_1   = 3           # Start of lowering mass, m
+    Lowering_Time_End_1     = 7           # End of lowering mass, m
+    Lowering_Time_Start_2   = 10          # Start of lowering mass, m
+    Lowering_Time_End_2     = 14.5            # End of lowering mass, m
+    Lowering_Time_Start_3   = 16         # Start of lowering mass, m
+    Lowering_Time_End_3     = 17           # End of lowering mass, m
+    Lowering_Time_Start_4   = 18         # Start of lowering mass, m
+    Lowering_Time_End_4     = 19           # End of lowering mass, m
 
     if Lifting_Time_Start_1 <= t < Lifting_Time_End_1:
         u = -10
     elif Lowering_Time_Start_1 <= t < Lowering_Time_End_1:
         u = 10
     elif Lowering_Time_Start_2 <= t < Lowering_Time_End_2:
-        u = -10
+         u = -10
     elif Lowering_Time_Start_3 <= t < Lowering_Time_End_3:
+         u = 10
+    elif Lowering_Time_Start_4 <= t < Lowering_Time_End_4:
+         u = -10
+    else:
+        u = 0
+    
+    return u
+
+
+# Control signal 1
+def uref_1(t):
+    
+    
+    #Lets comment this part and call 
+    Lifting_Time_Start_1    = 2          # Start of lifting mass, m
+    Lifting_Time_End_1      = 6          # End of lifting mass, m
+    Lowering_Time_Start_1   = 8           # Start of lowering mass, m
+    Lowering_Time_End_1     = 10.7     # End of lowering mass, m
+    Lowering_Time_Start_2   = 13          # Start of lowering mass, m
+    Lowering_Time_End_2     = 16            # End of lowering mass, m
+    Lowering_Time_Start_3   = 17        # Start of lowering mass, m
+    Lowering_Time_End_3     = 18          # End of lowering mass, m
+    Lowering_Time_Start_4   = 18.5         # Start of lowering mass, m
+    Lowering_Time_End_4     = 19           # End of lowering mass, m
+
+    if Lifting_Time_Start_1 <= t < Lifting_Time_End_1:
         u = 10
+    elif Lowering_Time_Start_1 <= t < Lowering_Time_End_1:
+        u = -10
+    elif Lowering_Time_Start_2 <= t < Lowering_Time_End_2:
+         u = 10
+    elif Lowering_Time_Start_3 <= t < Lowering_Time_End_3:
+         u = -10
+    # elif Lowering_Time_Start_4 <= t < Lowering_Time_End_4:
+    #      u = -10
     else:
         u = 0
     
@@ -34,20 +72,24 @@ def uref_2(t):
    Lifting_Time_Start_1  = 1.0          # Start of lifting mass, m
    Lifting_Time_End_1    = 3.0            # End of lifting mass, m
    Lowering_Time_Start_1 = 4.0         # Start of lowering mass, m
-   Lowering_Time_End_1   = 8.4           # End of lowering mass, m
-   Lowering_Time_Start_2 = 9.0         # Start of lowering mass, m
-   Lowering_Time_End_2   = 8.5           # End of lowering mass, m
-   Lowering_Time_Start_3 = 9.0         # Start of lowering mass, m
-   Lowering_Time_End_3 = 9.7          # End of lowering mass, m
+   Lowering_Time_End_1   = 6.6           # End of lowering mass, m
+   Lowering_Time_Start_2 = 8         # Start of lowering mass, m
+   Lowering_Time_End_2   = 10           # End of lowering mass, m
+   Lowering_Time_Start_3 = 12         # Start of lowering mass, m
+   Lowering_Time_End_3 = 15          # End of lowering mass, m
+   Lowering_Time_Start_4 = 16         # Start of lowering mass, m
+   Lowering_Time_End_4 = 18          # End of lowering mass, m
 
    if Lifting_Time_Start_1 <= t < Lifting_Time_End_1:
        u = 10
    elif Lowering_Time_Start_1 <= t < Lowering_Time_End_1:
        u = -10
-   # elif Lowering_Time_Start_2 <= t < Lowering_Time_End_2:
-   #     u = 10
-   # elif Lowering_Time_Start_3 <= t < Lowering_Time_End_3:
-   #     u = -10
+   elif Lowering_Time_Start_2 <= t < Lowering_Time_End_2:
+       u = 10
+   elif Lowering_Time_Start_3 <= t < Lowering_Time_End_3:
+       u = -10
+   elif Lowering_Time_Start_4 <= t < Lowering_Time_End_4:
+         u = 10
    else:
        u = 0
     #u = ExpData[t,5]

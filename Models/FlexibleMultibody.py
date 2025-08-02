@@ -28,10 +28,10 @@ class NNHydraulics():
         
         self.angleMinDeg1      = 0
         self.angleMaxDeg1      = 50
-        self.p1Init            = 5e6
-        self.p2Init            = 5e6
-        self.p3Init            = 5e6
-        self.p4Init            = 5e6
+        self.p1Init            = 8e6
+        self.p2Init            = 8e6
+        self.p3Init            = 8e6
+        self.p4Init            = 8e6
         
         self.timeVecOut       = np.arange(1,self.nStepsTotal+1)/self.nStepsTotal*self.endTime
         
@@ -73,7 +73,7 @@ class NNHydraulics():
             pP  = np.zeros(self.nStepsTotal)
     
             for i in range(self.nStepsTotal):
-                U1[i] =uref_1(self.timeVecOut[i])
+                U1[i] =uref(self.timeVecOut[i])
                 pP[i] = 100e5
     
             vec[0:self.nStepsTotal]                         = U1[0:self.nStepsTotal]      
@@ -191,7 +191,7 @@ class NNHydraulics():
                 outputData[4*self.nStepsTotal:5*self.nStepsTotal]   = self.mbs.GetSensorStoredData(DS['StrainPoint'])[0:1*self.nStepsTotal,6]
                 outputData[5*self.nStepsTotal:6*self.nStepsTotal]   = self.mbs.GetSensorStoredData(DS['StressPoint'])[0:1*self.nStepsTotal,1]
         
-        if self.Visualization:
+        if solutionViewer:
            self.mbs.SolutionViewer()
            
 
@@ -257,7 +257,7 @@ class NNHydraulics():
             plt.grid(True)  # Add grid
             # Set axis limits
             plt.xlim(0, self.endTime)
-            plt.ylim(900, 1100)
+            plt.ylim(800, 1200)
             plt.savefig('solution/TwoArms/s1.png')
             plt.show()
             
@@ -273,7 +273,7 @@ class NNHydraulics():
             plt.grid(True)  # Add grid
             # Set axis limits
             plt.xlim(0, self.endTime)
-            plt.ylim(950, 1300)
+            plt.ylim(950, 1400)
             plt.savefig('solution/TwoArms/s2.png')
             plt.show()
             
@@ -340,7 +340,7 @@ class NNHydraulics():
             plt.grid(True)  # Add grid
             # Set axis limits
             plt.xlim(0, self.endTime)
-            plt.ylim(1e5, 250e5)
+            plt.ylim(1e5, 150e5)
             plt.savefig('solution/TwoArms/p2.png')
             plt.show()
             
@@ -357,7 +357,7 @@ class NNHydraulics():
             plt.grid(True)  # Add grid
             # Set axis limits
             plt.xlim(0, self.endTime)
-            plt.ylim(-25e5, 200e5)
+            plt.ylim(-25e5, 150e5)
             plt.savefig('solution/TwoArms/p3.png')
             plt.show()
             
@@ -374,7 +374,7 @@ class NNHydraulics():
             plt.grid(True)  # Add grid
             # Set axis limits
             plt.xlim(0, self.endTime)
-            plt.ylim(0e5, 250e5)
+            plt.ylim(0e5, 100e5)
             plt.savefig('solution/TwoArms/p4.png')
             plt.show()
             
@@ -489,7 +489,7 @@ class NNHydraulics():
            plt.grid(True)  # Add grid
            # Set axis limits
            plt.xlim(0, self.endTime)
-           plt.ylim(900, 1100)
+           plt.ylim(L_Cyl1*1000, 1200)
            plt.savefig('solution/OneArm/s1.png')
            plt.show()
            
@@ -505,7 +505,7 @@ class NNHydraulics():
            plt.grid(True)  # Add grid
            # Set axis limits
            plt.xlim(0, self.endTime)
-           plt.ylim(-0.125, 0.125)
+           plt.ylim(-0.12, 0.12)
            plt.savefig('solution/OneArm/dots1.png')
            plt.show()
            
@@ -521,7 +521,7 @@ class NNHydraulics():
            plt.grid(True)  # Add grid
            # Set axis limits
            plt.xlim(0, self.endTime)
-           plt.ylim(20e5, 130e5)
+           plt.ylim(0e5, 100e5)
            plt.savefig('solution/OneArm/p1.png')
            plt.show()
            
@@ -538,7 +538,7 @@ class NNHydraulics():
            plt.grid(True)  # Add grid
            # Set axis limits
            plt.xlim(0, self.endTime)
-           plt.ylim(20e5, 140e5)
+           plt.ylim(0e5, 100e5)
            plt.savefig('solution/OneArm/p2.png')
            plt.show()
            
@@ -576,7 +576,7 @@ class NNHydraulics():
                plt.grid(True)  # Add grid
                # Set axis limits
                plt.xlim(0, self.endTime)
-               plt.ylim(-15, 25)
+               plt.ylim(-15, 20)
                plt.savefig('solution/OneArm/deltaSig.png')
                plt.show()
             

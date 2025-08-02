@@ -10,6 +10,7 @@ import math as mt
 #EXUDYN Libraries
 import exudyn as exu
 from exudyn.itemInterface import *
+import exudyn.graphics as graphics
 from exudyn.utilities import *
 from exudyn.plot import PlotSensor, listMarkerStyles
 from exudyn.signalProcessing import GetInterpolatedSignalValue
@@ -24,13 +25,16 @@ fileName4       = 'AbaqusMesh/Bracket1.stl'
 fileName5       = 'AbaqusMesh/Bracket2.stl'
 fileName6       = 'AbaqusMesh/ExtensionBoom.stl'
 
+plane           = graphics.CheckerBoard(point=[2,0,-2], normal=[0,0,1], size=6, nTiles=16,
+                                        color=color4lightgrey,alternatingColor=color4lightgrey2)
+
 # physical parameters
 Gravity         = [0, -9.8066, 0]  # Gravity
 # Cylinder and piston parameters
-L_Cyl1          = 820e-3                            # Cylinder length
+L_Cyl1          = 820e-3                           # Cylinder length
 D_Cyl1          = 100e-3                             # Cylinder dia
 A_1             = (pi/4)*(D_Cyl1)**2                # Area of cylinder side
-L_Pis1          = 535e-3                             # Piston length, also equals to stroke length
+L_Pis1          = 535e-3+50e-3                       # Piston length, also equals to stroke length
 d_pis1          = 56e-3                             # Piston dia
 A_2             = A_1-(pi/4)*(d_pis1)**2            # Area on piston-rod side
 L_Cyl2          = 1050e-3                            # Cylinder length
@@ -48,8 +52,9 @@ sig2            = 330
 vs              = 5e-3
 Qn               =(24/60000)/((9.9)*sqrt(35e5))                     # Nominal flow rate of valve at 18 l/min under
 Qn1             = (24/60000)/((9.9)*sqrt(35e5))                      # Nominal flow rate of valve at 18 l/min under
-Qn2             = (32/60000)/((9.9)*sqrt(35e5))                      # Nominal flow rate of valve at 18 l/min under
-
+Qn2             = (45/60000)/((9.9)*sqrt(35e5))                      # Nominal flow rate of valve at 18 l/min under
+pS              = 100e5
+pT              = 1e5  
 
 
 PillarP         = np.array([0, 0, 0])
@@ -61,6 +66,9 @@ m1              = 93.26
 pMid1           = np.array([-0.017403, 0.577291, 0])  # center of mass, body0,0.004000,-0.257068
 Inertia1        = np.array([[16.328381,-1.276728, 0.000016],[-1.276728, 0.612003, -5.9e-5],[0.000016,  -5.9e-5  , 16.503728]])
 Mark3           = [0,0,0]
+graphicsBody1   = GraphicsDataFromSTLfile(fileName1, color4black,verbose=False, invertNormals=True,invertTriangles=True)
+graphicsBody1   = AddEdgesAndSmoothenNormals(graphicsBody1, edgeAngle=0.25*pi,addEdges=True, smoothNormals=True)
+
 
 # Second Body: LiftBoom
 Mark4           = [-90*1e-3, 1426.1*1e-3, 0]
@@ -111,8 +119,7 @@ graphicsBody6   = AddEdgesAndSmoothenNormals(graphicsBody6, edgeAngle=0.25*pi,ad
 
 
 Mark5           = [170*1e-3, 386.113249*1e-3, 0]
-pS              = 160e5
-pT              = 1e5  
+
 A_d             = (1/100)
 
 a4_width_inches, a4_height_inches = 11.7, 8.3 / 2  # Horizontal layout
