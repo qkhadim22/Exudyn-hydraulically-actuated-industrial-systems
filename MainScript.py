@@ -8,13 +8,13 @@ from Models.Container import *
 
 ###############################
 
-Patu            = False
+Patu            = True
 timeStep        = 5e-3                  #Simulation time step: Change it as desired.
 T               = 20                   #Time period
 ns              = int(T/timeStep)       
 angleInit1      = np.deg2rad(14.6)      #LiftBoom anglee              
 angleInit2      = np.deg2rad(-58.8)     #TiltBoom angle 
-LiftLoad        = 0              #469.1387
+LiftLoad        = 300              #469.1387
 
 #in this section we create or load data
 if  Patu:
@@ -24,7 +24,7 @@ else:
     
 
 model       = NNHydraulics(nStepsTotal=ns, endTime=T,  mL    = LiftLoad,Flexible=True, 
-                           nModes=40, loadFromSavedNPY=True, system=Patu, verboseMode=1)
+                           nModes=100, loadFromSavedNPY=True, system=Patu, verboseMode=1)
 
 inputVec    = model.CreateInputVector( ns,  angleInit1,angleInit2,system=Patu )
 
