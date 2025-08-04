@@ -8,7 +8,7 @@ from Models.Container import *
 
 ###############################
 
-Patu            = False
+Patu            = True
 timeStep        = 5e-3                  #Simulation time step: Change it as desired.
 T               = 20                   #Time period
 ns              = int(T/timeStep)       
@@ -24,7 +24,7 @@ else:
     
 
 model       = NNHydraulics(nStepsTotal=ns, endTime=T,  mL    = LiftLoad,Flexible=True, 
-                           nModes=40, loadFromSavedNPY=True, system=Patu, verboseMode=1)
+                           nModes=30, loadFromSavedNPY=False, system=Patu, verboseMode=1)
 
 inputVec    = model.CreateInputVector( ns,  angleInit1,angleInit2,system=Patu )
 
@@ -34,7 +34,7 @@ data = model.ComputeModel(inputVec,system=Patu,  solutionViewer = True) #solutio
 data_array = np.array(data, dtype=object)
 np.save(dataFile, data_array)
 
-Plotting    =  False
+Plotting    =  True
 
 if Plotting:
    model.Plotting(data_array)
