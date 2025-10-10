@@ -172,14 +172,14 @@ def LiftBoom(self, theta1, p1, p2):
                                               weightingFactors=noodeWeightsJoint3))
             
             else:
-                Marker9             = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[2875*1e-3,15.15*1e-3])) 
+                Marker9             = self.mbs.AddMarker(MarkerBodyRigid(bodyNumber=b2, localPosition=[2880*1e-3,15.15*1e-3, 0])) 
                 
             
             pos = self.mbs.GetMarkerOutput(Marker9, variableType=exu.OutputVariableType.Position, 
                                            configuration=exu.ConfigurationType.Reference)
             #print('pos=', pos)
             bMass = self.mbs.CreateMassPoint(physicsMass=self.mL, referencePosition=pos, show=True, gravity=[0, -9.8066, 0],
-                                     graphicsDataList=[GraphicsDataSphere(radius=0.04, color=color4red)])
+                                     graphicsDataList=[GraphicsDataSphere(radius=0.1, color=color4red)])
             mMass = self.mbs.AddMarker(MarkerBodyPosition(bodyNumber=bMass))
             self.mbs.AddObject(SphericalJoint(markerNumbers=[Marker9, mMass], visualization=VSphericalJoint(show=False)))
 
@@ -198,9 +198,9 @@ def LiftBoom(self, theta1, p1, p2):
         # #Not used
         def CylinderFriction1(mbs, t, itemNumber, u, v, k, d, F0):
 
-                Ff = 0.2*StribeckFunction(v, muDynamic=1, muStaticOffset=1.5, regVel=1e-4)+(k*(u) + d*v + k*(u)**3-F0)
+                Ff = StribeckFunction(v, muDynamic=1, muStaticOffset=1.5, regVel=1e-4)+(k*(u) + d*v + k*(u)**3-F0)
                 #print(Ff)
-                return Ff
+                return 20*Ff
             
         def UFfrictionSpringDamper(mbs, t, itemIndex, u, v, k, d, f0):
             return   1*(Fc*tanh(4*(abs(v    )/vs))+(Fs-Fc)*((abs(v    )/vs)/((1/4)*(abs(v    )/vs)**2+3/4)**2))*np.sign(v )+sig2*v    *tanh(4)
@@ -218,7 +218,7 @@ def LiftBoom(self, theta1, p1, p2):
             oHA1                = self.mbs.AddObject(HydraulicActuatorSimple(name='LiftCylinder', markerNumbers=[ Marker5, Marker8], 
                                                     nodeNumbers=[nODE1], offsetLength=L_Cyl1, strokeLength=L_Pis1, chamberCrossSection0=A[0], 
                                                     chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                    valveOpening1=0, actuatorDamping=2e4, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                    valveOpening1=0, actuatorDamping=1.5e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
                                                     hoseBulkModulus=Bh, nominalFlow=Qn, systemPressure=pS, tankPressure=pT, 
                                                     useChamberVolumeChange=True, activeConnector=True, 
                                                     visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
@@ -347,10 +347,10 @@ def LiftBoom(self, theta1, p1, p2):
             self.simulationSettings.staticSolver.numberOfLoadSteps = 10
             self.simulationSettings.staticSolver.constrainODE1coordinates = True #constrain pressures to initial values
         
-            exu.SuppressWarnings(True)
+            exu.SuppressWarnings
             self.mbs.SolveStatic(self.simulationSettings, 
                             updateInitialValues=True) #use solution as new initial values for next simulation
-            exu.SuppressWarnings(False)
+            # exu.SuppressWarnings(False)
             
             #now deactivate distance constraint:
             # self.mbs.SetObjectParameter(oDC, 'activeConnector', False)
@@ -833,13 +833,13 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
 
            Ff = 1*StribeckFunction(v, muDynamic=1, muStaticOffset=1.5, regVel=1e-4)+(k*(u) + d*v + k*(u)**3-F0)
            #print(Ff)
-           return Ff*1
+           return Ff*0.1
                 
        def CylinderFriction2(mbs, t, itemNumber, u, v, k, d, F0):
 
            Ff =  1*StribeckFunction(v, muDynamic=0.5, muStaticOffset=0.5, regVel=1e-2) - (k*(u) - d*v + k*(u)**3 -F0)
            #print(Ff)
-           return Ff*1
+           return Ff*0.1
                 
                 
        # def UFfrictionSpringDamper1(mbs, t, itemIndex, u, v, k, d, f0): 
@@ -869,7 +869,7 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            oHA1                = self.mbs.AddObject(HydraulicActuatorSimple(name='LiftCylinder', markerNumbers=[ Marker5, Marker8], 
                                                    nodeNumbers=[nODE1], offsetLength=L_Cyl1, strokeLength=L_Pis1, chamberCrossSection0=A[0], 
                                                    chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                   valveOpening1=0, actuatorDamping=3e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                   valveOpening1=0, actuatorDamping=8e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
                                                    hoseBulkModulus=Bh, nominalFlow=Qn1, systemPressure=pS, tankPressure=pT, 
                                                    useChamberVolumeChange=True, activeConnector=True, 
                                                    visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
@@ -880,7 +880,7 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            oHA2 = self.mbs.AddObject(HydraulicActuatorSimple(name='TiltCylinder', markerNumbers=[Marker9, Marker16], 
                                                      nodeNumbers=[nODE2], offsetLength=LH2, strokeLength=L_Pis2, chamberCrossSection0=A[0], 
                                                      chamberCrossSection1=A[1], hoseVolume0=V1, hoseVolume1=V2, valveOpening0=0, 
-                                                     valveOpening1=0, actuatorDamping=5e4, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
+                                                     valveOpening1=0, actuatorDamping=8e5, oilBulkModulus=Bo, cylinderBulkModulus=Bc, 
                                                      hoseBulkModulus=Bh, nominalFlow=Qn2, systemPressure=pS, tankPressure=pT, 
                                                      useChamberVolumeChange=True, activeConnector=True, 
                                                      visualization={'show': True, 'cylinderRadius': 50e-3, 'rodRadius': 28e-3, 
@@ -1047,10 +1047,10 @@ def PatuCrane(self, theta1,theta2, p1, p2,p3, p4):
            self.simulationSettings.staticSolver.numberOfLoadSteps = 10
            self.simulationSettings.staticSolver.constrainODE1coordinates = True #constrain pressures to initial values
        
-           exu.SuppressWarnings(True)
+           exu.SuppressWarnings
            self.mbs.SolveStatic(self.simulationSettings, 
                            updateInitialValues=True) #use solution as new initial values for next simulation
-           exu.SuppressWarnings(False)
+           # exu.SuppressWarnings(False)
          
            force1 = self.mbs.GetObjectOutput(oDC, variableType=exu.OutputVariableType.Force)
            force2 = self.mbs.GetObjectOutput(oDCT, variableType=exu.OutputVariableType.Force)

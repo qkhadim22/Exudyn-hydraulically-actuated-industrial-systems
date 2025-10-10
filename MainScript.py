@@ -24,7 +24,7 @@ else:
     
 
 model       = NNHydraulics(nStepsTotal=ns, endTime=T,  mL    = LiftLoad,Flexible=True, 
-                           nModes=30, loadFromSavedNPY=False, system=Patu, verboseMode=1)
+                           nModes=10, loadFromSavedNPY=True, system=Patu, verboseMode=1)
 
 inputVec    = model.CreateInputVector( ns,  angleInit1,angleInit2,system=Patu )
 

@@ -26,8 +26,8 @@ I would also like to thanks Prof. Grzegorz Orzechowski, Prof. Emil Kurvinen, Pro
 
 ## References
 - Use the references below for citing the hydraulic parameters and hydraulically actuated flexible multibody systems. Contributions on flexible bodies, flexible multibody systems, hydraulics, and actuator frictions can be found in reference ii.
-	1. Qasim Khadim, et al. Experimental investigation into the state estimation of a forestry crane using the unscented Kalman filter and a multiphysics model. Mechanism and Machine Theory, 189, 105405, 2023.
-	2. Qasim Khadim, Peter Manzl, Emil Kurvinen, Aki Mikkola, Grzegorz Orzechowski, Johannes Gerstmayr. Real-Time Structural Deflection Estimation in Hydraulically Actuated Systems Using 3D Flexible Multibody Simulation and DNNs. Mechanical Systems and Signal Processing, Under Review, 2025.
+	1.  Khadim, Q., et al. Experimental investigation into the state estimation of a forestry crane using the unscented Kalman filter and a multiphysics model. Mechanism and Machine Theory, 189, 105405, 2023.
+	2. Khadim, Q., Manzl, P., Kurvinen, E., Mikkola, A., Orzechowski, G. and Gerstmayr, J., 2025. Real-time structural dynamics estimation in hydraulically actuated systems using 3D flexible multibody simulation and SLIDE networks. Mechanical Systems and Signal Processing, 240, p.113220.
 
 ## Installation
 Clone the repository and install dependencies:
